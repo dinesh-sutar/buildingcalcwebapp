@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.raaj.building_calculation_backend.dto.BuildingTypeRequest;
-import com.raaj.building_calculation_backend.entity.BuildingType;
+import com.raaj.building_calculation_backend.dto.BuildingTypeResponse;
 import com.raaj.building_calculation_backend.service.BuildingTypeService;
 
 import lombok.RequiredArgsConstructor;
@@ -20,17 +20,17 @@ public class BuildingTypeController {
     private final BuildingTypeService service;
 
     @GetMapping
-    public ResponseEntity<List<BuildingType>> getAll() {
+    public ResponseEntity<List<BuildingTypeResponse>> getAll() {
         return ResponseEntity.ok(service.getAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<BuildingType> getById(@PathVariable Long id) {
+    public ResponseEntity<BuildingTypeResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     @PostMapping
-    public ResponseEntity<BuildingType> create(
+    public ResponseEntity<BuildingTypeResponse> create(
             @RequestBody BuildingTypeRequest request) {
 
         return ResponseEntity
@@ -39,7 +39,7 @@ public class BuildingTypeController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BuildingType> update(
+    public ResponseEntity<BuildingTypeResponse> update(
             @PathVariable Long id,
             @RequestBody BuildingTypeRequest request) {
 

@@ -1,3 +1,4 @@
+// service/BuildingTypeService.java
 package com.raaj.building_calculation_backend.service;
 
 import java.util.List;
@@ -5,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.raaj.building_calculation_backend.dto.BuildingTypeRequest;
+import com.raaj.building_calculation_backend.dto.BuildingTypeResponse;
 import com.raaj.building_calculation_backend.entity.BuildingType;
 import com.raaj.building_calculation_backend.repository.BuildingTypeRepository;
 
@@ -16,16 +18,18 @@ public class BuildingTypeService {
 
     private final BuildingTypeRepository repository;
 
-    public List<BuildingType> getAll() {
-        return repository.findAll();
+    public List<BuildingTypeResponse> getAll() {
+        return repository.findAll()
+                .stream()
+                .map(BuildingTypeResponse::from)
+                .toList();
     }
 
-    public BuildingType getById(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Building type not found: " + id));
+    public BuildingTypeResponse getById(Long id) {
+        return BuildingTypeResponse.from(getEntity(id));
     }
 
-    public BuildingType create(BuildingTypeRequest request) {
+    public BuildingTypeResponse create(BuildingTypeRequest request) {
 
         if (repository.existsByCode(request.getCode())) {
             throw new RuntimeException(
@@ -44,12 +48,12 @@ public class BuildingTypeService {
         entity.setActive(
                 request.getActive() != null ? request.getActive() : true);
 
-        return repository.save(entity);
+        return BuildingTypeResponse.from(repository.save(entity));
     }
 
-    public BuildingType update(Long id, BuildingTypeRequest request) {
+    public BuildingTypeResponse update(Long id, BuildingTypeRequest request) {
 
-        BuildingType entity = getById(id);
+        BuildingType entity = getEntity(id);
 
         entity.setCode(request.getCode());
         entity.setName(request.getName());
@@ -58,11 +62,16 @@ public class BuildingTypeService {
             entity.setActive(request.getActive());
         }
 
-        return repository.save(entity);
+        return BuildingTypeResponse.from(repository.save(entity));
     }
 
     public void delete(Long id) {
-        BuildingType entity = getById(id);
-        repository.delete(entity);
+        repository.delete(getEntity(id));
+    }
+
+    // internal helper - keeps entity lookups out of the public API surface
+    private BuildingType getEntity(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Building type not found: " + id));
     }
 }

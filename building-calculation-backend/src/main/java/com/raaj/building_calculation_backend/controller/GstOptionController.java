@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.raaj.building_calculation_backend.dto.GstOptionRequest;
-import com.raaj.building_calculation_backend.entity.GstOption;
+import com.raaj.building_calculation_backend.dto.GstOptionResponse;
 import com.raaj.building_calculation_backend.service.GstOptionService;
 
 import lombok.RequiredArgsConstructor;
@@ -20,17 +20,17 @@ public class GstOptionController {
     private final GstOptionService service;
 
     @GetMapping
-    public ResponseEntity<List<GstOption>> getAll() {
+    public ResponseEntity<List<GstOptionResponse>> getAll() {
         return ResponseEntity.ok(service.getAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<GstOption> getById(@PathVariable Long id) {
+    public ResponseEntity<GstOptionResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     @PostMapping
-    public ResponseEntity<GstOption> create(
+    public ResponseEntity<GstOptionResponse> create(
             @RequestBody GstOptionRequest request) {
 
         return ResponseEntity
@@ -39,7 +39,7 @@ public class GstOptionController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<GstOption> update(
+    public ResponseEntity<GstOptionResponse> update(
             @PathVariable Long id,
             @RequestBody GstOptionRequest request) {
 

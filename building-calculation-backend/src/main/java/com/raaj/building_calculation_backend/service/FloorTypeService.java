@@ -1,3 +1,4 @@
+// service/FloorTypeService.java
 package com.raaj.building_calculation_backend.service;
 
 import java.util.List;
@@ -5,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.raaj.building_calculation_backend.dto.FloorTypeRequest;
+import com.raaj.building_calculation_backend.dto.FloorTypeResponse;
 import com.raaj.building_calculation_backend.entity.FloorType;
 import com.raaj.building_calculation_backend.repository.FloorTypeRepository;
 
@@ -16,16 +18,18 @@ public class FloorTypeService {
 
     private final FloorTypeRepository repository;
 
-    public List<FloorType> getAll() {
-        return repository.findAll();
+    public List<FloorTypeResponse> getAll() {
+        return repository.findAll()
+                .stream()
+                .map(FloorTypeResponse::from)
+                .toList();
     }
 
-    public FloorType getById(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Floor type not found: " + id));
+    public FloorTypeResponse getById(Long id) {
+        return FloorTypeResponse.from(getEntity(id));
     }
 
-    public FloorType create(FloorTypeRequest request) {
+    public FloorTypeResponse create(FloorTypeRequest request) {
 
         if (repository.existsByCode(request.getCode())) {
             throw new RuntimeException(
@@ -45,12 +49,12 @@ public class FloorTypeService {
         entity.setActive(
                 request.getActive() != null ? request.getActive() : true);
 
-        return repository.save(entity);
+        return FloorTypeResponse.from(repository.save(entity));
     }
 
-    public FloorType update(Long id, FloorTypeRequest request) {
+    public FloorTypeResponse update(Long id, FloorTypeRequest request) {
 
-        FloorType entity = getById(id);
+        FloorType entity = getEntity(id);
 
         entity.setCode(request.getCode());
         entity.setName(request.getName());
@@ -60,11 +64,15 @@ public class FloorTypeService {
             entity.setActive(request.getActive());
         }
 
-        return repository.save(entity);
+        return FloorTypeResponse.from(repository.save(entity));
     }
 
     public void delete(Long id) {
-        FloorType entity = getById(id);
-        repository.delete(entity);
+        repository.delete(getEntity(id));
+    }
+
+    private FloorType getEntity(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Floor type not found: " + id));
     }
 }

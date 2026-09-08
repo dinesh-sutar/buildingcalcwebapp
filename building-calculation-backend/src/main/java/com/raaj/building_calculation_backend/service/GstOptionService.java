@@ -1,3 +1,4 @@
+// service/GstOptionService.java
 package com.raaj.building_calculation_backend.service;
 
 import java.util.List;
@@ -5,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.raaj.building_calculation_backend.dto.GstOptionRequest;
+import com.raaj.building_calculation_backend.dto.GstOptionResponse;
 import com.raaj.building_calculation_backend.entity.GstOption;
 import com.raaj.building_calculation_backend.repository.GstOptionRepository;
 
@@ -16,16 +18,18 @@ public class GstOptionService {
 
     private final GstOptionRepository repository;
 
-    public List<GstOption> getAll() {
-        return repository.findAll();
+    public List<GstOptionResponse> getAll() {
+        return repository.findAll()
+                .stream()
+                .map(GstOptionResponse::from)
+                .toList();
     }
 
-    public GstOption getById(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("GST option not found: " + id));
+    public GstOptionResponse getById(Long id) {
+        return GstOptionResponse.from(getEntity(id));
     }
 
-    public GstOption create(GstOptionRequest request) {
+    public GstOptionResponse create(GstOptionRequest request) {
 
         if (repository.existsByCode(request.getCode())) {
             throw new RuntimeException(
@@ -45,12 +49,12 @@ public class GstOptionService {
         entity.setActive(
                 request.getActive() != null ? request.getActive() : true);
 
-        return repository.save(entity);
+        return GstOptionResponse.from(repository.save(entity));
     }
 
-    public GstOption update(Long id, GstOptionRequest request) {
+    public GstOptionResponse update(Long id, GstOptionRequest request) {
 
-        GstOption entity = getById(id);
+        GstOption entity = getEntity(id);
 
         entity.setCode(request.getCode());
         entity.setName(request.getName());
@@ -60,11 +64,15 @@ public class GstOptionService {
             entity.setActive(request.getActive());
         }
 
-        return repository.save(entity);
+        return GstOptionResponse.from(repository.save(entity));
     }
 
     public void delete(Long id) {
-        GstOption entity = getById(id);
-        repository.delete(entity);
+        repository.delete(getEntity(id));
+    }
+
+    private GstOption getEntity(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("GST option not found: " + id));
     }
 }

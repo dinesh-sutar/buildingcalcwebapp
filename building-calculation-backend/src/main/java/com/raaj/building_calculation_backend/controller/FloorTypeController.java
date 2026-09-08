@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.raaj.building_calculation_backend.dto.FloorTypeRequest;
-import com.raaj.building_calculation_backend.entity.FloorType;
+import com.raaj.building_calculation_backend.dto.FloorTypeResponse;
 import com.raaj.building_calculation_backend.service.FloorTypeService;
 
 import lombok.RequiredArgsConstructor;
@@ -20,17 +20,17 @@ public class FloorTypeController {
     private final FloorTypeService service;
 
     @GetMapping
-    public ResponseEntity<List<FloorType>> getAll() {
+    public ResponseEntity<List<FloorTypeResponse>> getAll() {
         return ResponseEntity.ok(service.getAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<FloorType> getById(@PathVariable Long id) {
+    public ResponseEntity<FloorTypeResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     @PostMapping
-    public ResponseEntity<FloorType> create(
+    public ResponseEntity<FloorTypeResponse> create(
             @RequestBody FloorTypeRequest request) {
 
         return ResponseEntity
@@ -39,7 +39,7 @@ public class FloorTypeController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<FloorType> update(
+    public ResponseEntity<FloorTypeResponse> update(
             @PathVariable Long id,
             @RequestBody FloorTypeRequest request) {
 

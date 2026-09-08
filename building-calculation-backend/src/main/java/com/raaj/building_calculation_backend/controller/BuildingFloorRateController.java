@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.raaj.building_calculation_backend.dto.BuildingFloorRateRequest;
-import com.raaj.building_calculation_backend.entity.BuildingFloorRate;
+import com.raaj.building_calculation_backend.dto.BuildingFloorRateResponse;
 import com.raaj.building_calculation_backend.service.BuildingFloorRateService;
 
 import lombok.RequiredArgsConstructor;
@@ -27,19 +27,19 @@ public class BuildingFloorRateController {
     private final BuildingFloorRateService service;
 
     @GetMapping
-    public ResponseEntity<List<BuildingFloorRate>> getAll() {
+    public ResponseEntity<List<BuildingFloorRateResponse>> getAll() {
         return ResponseEntity.ok(service.getAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<BuildingFloorRate> getById(
+    public ResponseEntity<BuildingFloorRateResponse> getById(
             @PathVariable Long id) {
 
         return ResponseEntity.ok(service.getById(id));
     }
 
     @PostMapping
-    public ResponseEntity<BuildingFloorRate> create(
+    public ResponseEntity<BuildingFloorRateResponse> create(
             @RequestBody BuildingFloorRateRequest request) {
 
         return ResponseEntity
@@ -48,7 +48,7 @@ public class BuildingFloorRateController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BuildingFloorRate> update(
+    public ResponseEntity<BuildingFloorRateResponse> update(
             @PathVariable Long id,
             @RequestBody BuildingFloorRateRequest request) {
 
