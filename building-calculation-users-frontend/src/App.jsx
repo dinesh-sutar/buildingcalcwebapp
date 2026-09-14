@@ -1,4 +1,6 @@
+
 import {
+  useEffect,
   useMemo,
   useState
 } from "react";
@@ -13,8 +15,12 @@ import ActionButtons from "./components/ActionButtons";
 import useBuildingConfig from "./hooks/useBuildingConfig";
 
 import {
-  calculateValuation,
+  calculateValuation
 } from "./api/valuationApi";
+
+import {
+  getGstOptions
+} from "./api/gstApi";
 
 
 const initialForm = {
@@ -43,20 +49,42 @@ const initialForm = {
   floorAreas: {}
 };
 
+
 function App() {
 
   const {
     buildingTypes,
-
     floorings,
-
+    floorRates,
     loading,
-
     error: configError,
-
     getFloorsForBuilding
-
   } = useBuildingConfig();
+
+
+  // --------------------------------------------------
+  // GST STATE
+  // --------------------------------------------------
+
+  const [
+    gstOptions,
+    setGstOptions
+  ] = useState([]);
+
+  const [
+    gstLoading,
+    setGstLoading
+  ] = useState(false);
+
+  const [
+    gstError,
+    setGstError
+  ] = useState("");
+
+
+  // --------------------------------------------------
+  // FORM / RESULT STATE
+  // --------------------------------------------------
 
   const [
     form,
@@ -73,6 +101,60 @@ function App() {
     setError
   ] = useState("");
 
+
+  // --------------------------------------------------
+  // LOAD GST OPTIONS
+  // --------------------------------------------------
+
+  useEffect(() => {
+
+    async function loadGstOptions() {
+
+      setGstLoading(true);
+      setGstError("");
+
+      try {
+
+        const data =
+          await getGstOptions();
+
+        const activeOptions =
+          data.filter(
+            (option) =>
+              option.active === true
+          );
+
+        setGstOptions(
+          activeOptions
+        );
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load GST options:",
+          error
+        );
+
+        setGstError(
+          error.message ||
+          "Unable to load GST options."
+        );
+
+      } finally {
+
+        setGstLoading(false);
+      }
+    }
+
+    loadGstOptions();
+
+  }, []);
+
+
+  // --------------------------------------------------
+  // FLOORS FOR SELECTED BUILDING
+  // --------------------------------------------------
+
   const floors = useMemo(
     () =>
       getFloorsForBuilding(
@@ -84,156 +166,294 @@ function App() {
     ]
   );
 
+
+  // --------------------------------------------------
+  // CALCULATE
+  // --------------------------------------------------
+
   async function calculate() {
-  setError("");
-  setResult(null);
 
-  if (!form.totalValue) {
-    setError(
-      "Please enter the total property value."
-    );
-    return;
-  }
+    setError("");
+    setResult(null);
 
-  if (!form.landArea) {
-    setError(
-      "Please enter the land area."
-    );
-    return;
-  }
 
-  if (!form.landValue) {
-    setError(
-      "Please enter the land value."
-    );
-    return;
-  }
+    // ----------------------------------------------
+    // BASIC VALIDATION
+    // ----------------------------------------------
 
-  if (!form.buildingTypeId) {
-    setError(
-      "Please select a building type."
-    );
-    return;
-  }
+    if (!form.totalValue) {
 
-  if (!form.floorTypeId) {
-    setError(
-      "Please select a floor configuration."
-    );
-    return;
-  }
-
-  if (!form.flooringId) {
-    setError(
-      "Please select a flooring type."
-    );
-    return;
-  }
-
-  if (!form.gstType) {
-    setError(
-      "Please select a GST option."
-    );
-    return;
-  }
-
-  if (
-    form.includeBoundary &&
-    !form.boundaryCost
-  ) {
-    setError(
-      "Please enter the boundary cost."
-    );
-    return;
-  }
-
-  if (
-    form.includeParking &&
-    !form.parkingCost
-  ) {
-    setError(
-      "Please enter the parking cost."
-    );
-    return;
-  }
-
-  const request = {
-    totalValue:
-      Number(form.totalValue),
-
-    landArea:
-      Number(form.landArea),
-
-    landValue:
-      Number(form.landValue),
-
-    buildingTypeId:
-      Number(form.buildingTypeId),
-
-    floorTypeId:
-      Number(form.floorTypeId),
-
-    flooringId:
-      Number(form.flooringId),
-
-    gstType:
-      form.gstType,
-
-    boundaryCost:
-      form.includeBoundary
-        ? Number(form.boundaryCost)
-        : 0,
-
-    parkingCost:
-      form.includeParking
-        ? Number(form.parkingCost)
-        : 0,
-
-    floorAreas:
-      Object.entries(
-        form.floorAreas || {}
-      ).map(
-        ([floorTypeId, area]) => ({
-          floorTypeId:
-            Number(floorTypeId),
-
-          area:
-            Number(area),
-        })
-      ),
-  };
-
-  console.log(
-    "Sending request:",
-    request
-  );
-
-  try {
-    const response =
-      await calculateValuation(
-        request
+      setError(
+        "Please enter the total property value."
       );
 
+      return;
+    }
+
+
+    if (!form.landArea) {
+
+      setError(
+        "Please enter the land area."
+      );
+
+      return;
+    }
+
+
+    if (!form.landValue) {
+
+      setError(
+        "Please enter the land value."
+      );
+
+      return;
+    }
+
+
+    if (!form.buildingTypeId) {
+
+      setError(
+        "Please select a building type."
+      );
+
+      return;
+    }
+
+
+    if (!form.floorTypeId) {
+
+      setError(
+        "Please select a floor configuration."
+      );
+
+      return;
+    }
+
+
+    if (!form.flooringId) {
+
+      setError(
+        "Please select a flooring type."
+      );
+
+      return;
+    }
+
+
+    if (!form.gstType) {
+
+      setError(
+        "Please select a GST option."
+      );
+
+      return;
+    }
+
+
+    // ----------------------------------------------
+    // GST VALIDATION
+    // ----------------------------------------------
+
+    if (gstLoading) {
+
+      setError(
+        "GST options are still loading. Please wait."
+      );
+
+      return;
+    }
+
+
+    if (gstOptions.length === 0) {
+
+      setError(
+        "No active GST options are available."
+      );
+
+      return;
+    }
+
+
+    // ----------------------------------------------
+    // FIND SELECTED GST OPTION
+    // ----------------------------------------------
+
+    const selectedGstOption =
+      gstOptions.find(
+        (option) =>
+          option.code === form.gstType
+      );
+
+
+    if (!selectedGstOption) {
+
+      setError(
+        "Selected GST option could not be found."
+      );
+
+      return;
+    }
+
+
+    // ----------------------------------------------
+    // ADDITIONAL COST VALIDATION
+    // ----------------------------------------------
+
+    if (
+      form.includeBoundary &&
+      !form.boundaryCost
+    ) {
+
+      setError(
+        "Please enter the boundary cost."
+      );
+
+      return;
+    }
+
+
+    if (
+      form.includeParking &&
+      !form.parkingCost
+    ) {
+
+      setError(
+        "Please enter the parking cost."
+      );
+
+      return;
+    }
+
+
+    // ----------------------------------------------
+    // BUILD FLOOR AREA REQUEST
+    // ----------------------------------------------
+
+    const floorAreas =
+      Object.entries(
+        form.floorAreas || {}
+      )
+        .filter(
+          ([, area]) =>
+            area !== "" &&
+            area !== null &&
+            area !== undefined
+        )
+        .map(
+          ([floorTypeId, area]) => ({
+            componentFloorTypeId:
+              Number(floorTypeId),
+
+            area:
+              Number(area)
+          })
+        );
+
+
+    // ----------------------------------------------
+    // FINAL API REQUEST
+    // ----------------------------------------------
+
+    const request = {
+
+      totalValue:
+        Number(form.totalValue),
+
+      area:
+        Number(form.landArea),
+
+      ratePerSqft:
+        Number(form.landValue),
+
+      buildingTypeId:
+        Number(form.buildingTypeId),
+
+      floorTypeId:
+        Number(form.floorTypeId),
+
+      flooringId:
+        Number(form.flooringId),
+
+      // IMPORTANT:
+      // Backend expects gstOptionId,
+      // not gstType.
+      gstOptionId:
+        selectedGstOption.id,
+
+      boundaryCost:
+        form.includeBoundary
+          ? Number(form.boundaryCost)
+          : 0,
+
+      parkingCost:
+        form.includeParking
+          ? Number(form.parkingCost)
+          : 0,
+
+      floorAreas
+    };
+
+
+    // ----------------------------------------------
+    // DEBUG
+    // ----------------------------------------------
+
     console.log(
-      "API response:",
-      response
+      "Selected GST option:",
+      selectedGstOption
     );
 
-    setResult(response);
-  } catch (error) {
-    console.error(
-      "Calculation failed:",
-      error
+    console.log(
+      "Sending valuation request:",
+      request
     );
 
-    setError(
-      error.message ||
+
+    // ----------------------------------------------
+    // API CALL
+    // ----------------------------------------------
+
+    try {
+
+      const response =
+        await calculateValuation(
+          request
+        );
+
+
+      console.log(
+        "API response:",
+        response
+      );
+
+
+      setResult(
+        response
+      );
+
+    } catch (error) {
+
+      console.error(
+        "Calculation failed:",
+        error
+      );
+
+
+      setError(
+        error.message ||
         "Unable to calculate valuation."
-    );
+      );
+    }
   }
-}
+
+
+  // --------------------------------------------------
+  // CLEAR FORM
+  // --------------------------------------------------
 
   function clearForm() {
+
     setForm(
       initialForm
     );
@@ -243,10 +463,16 @@ function App() {
     setError("");
   }
 
+
+  // --------------------------------------------------
+  // UI
+  // --------------------------------------------------
+
   return (
     <div className="app">
 
       <Header />
+
 
       <main className="main-container">
 
@@ -272,54 +498,85 @@ function App() {
 
         </div>
 
+
         {(error ||
-          configError) && (
-          <div className="error-message">
+          configError ||
+          gstError) && (
 
-            <span>
-              !
-            </span>
+            <div className="error-message">
 
-            {error ||
-              configError}
+              <span>
+                !
+              </span>
 
-          </div>
-        )}
+              {error ||
+                configError ||
+                gstError}
+
+            </div>
+          )}
+
 
         <PropertyDetails
           form={form}
           setForm={setForm}
+
           buildingTypes={
             buildingTypes
           }
-          floors={floors}
-          floorings={floorings}
-          loading={loading}
+
+          floors={
+            floors
+          }
+
+          floorings={
+            floorings
+          }
+
+          gstOptions={
+            gstOptions
+          }
+
+          loading={
+            loading
+          }
+
+          gstLoading={
+            gstLoading
+          }
         />
+
 
         <FloorDetails
           form={form}
           setForm={setForm}
           floors={floors}
+          floorRates={floorRates}
         />
+
 
         <AdditionalCosts
           form={form}
           setForm={setForm}
         />
 
+
         <ActionButtons
           onClear={clearForm}
           onCalculate={calculate}
         />
 
+
         {result && (
+
           <ResultCard
             result={result}
           />
+
         )}
 
       </main>
+
 
       <footer className="footer">
 
@@ -336,5 +593,6 @@ function App() {
     </div>
   );
 }
+
 
 export default App;

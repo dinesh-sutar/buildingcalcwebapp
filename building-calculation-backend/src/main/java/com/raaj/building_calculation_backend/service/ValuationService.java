@@ -90,8 +90,7 @@ public class ValuationService {
         BigDecimal parkingCost = nvl(request.getParkingCost());
 
         // --- Stage 1: base value h, rounded up to the next multiple of 10 ---
-        BigDecimal h = roundUpToTen(
-                request.getArea().multiply(request.getRatePerSqft()).setScale(0, RoundingMode.HALF_UP));
+        BigDecimal h = request.getArea().multiply(request.getRatePerSqft()).setScale(0, RoundingMode.HALF_UP);
 
         BigDecimal totalValue = request.getTotalValue();
         boolean gstApplicable = gstOption.getRate() != null
@@ -101,6 +100,8 @@ public class ValuationService {
         // or add a dedicated boolean column to GstOption.
         boolean withLand = gstApplicable && gstOption.getCode() != null
                 && gstOption.getCode().toUpperCase().contains("WITH_LAND");
+
+        System.out.println("GST Applicable: " + gstApplicable + ", withLand: " + withLand);
 
         BigDecimal buildingCost;
         BigDecimal extraItems;
@@ -149,7 +150,8 @@ public class ValuationService {
             gstAmount = gst;
         }
 
-        // --- Stage 2: split buildingCost across floors, weighted by area x (baseRate + flooringRate) ---
+        // --- Stage 2: split buildingCost across floors, weighted by area x (baseRate +
+        // flooringRate) ---
         Map<Long, BigDecimal> weights = new HashMap<>();
         BigDecimal totalWeight = BigDecimal.ZERO;
         for (FloorAreaInput input : request.getFloorAreas()) {

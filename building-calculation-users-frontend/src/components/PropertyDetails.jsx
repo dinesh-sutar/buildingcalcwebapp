@@ -4,9 +4,13 @@ function PropertyDetails({
   buildingTypes,
   floors,
   floorings,
-  loading
+  gstOptions,
+  loading,
+  gstLoading
 }) {
+
   function handleChange(event) {
+
     const {
       name,
       value
@@ -18,25 +22,35 @@ function PropertyDetails({
     }));
   }
 
+
   function handleBuildingChange(
     event
   ) {
+
     const value =
       event.target.value;
 
     setForm((previous) => ({
       ...previous,
 
-      buildingTypeId: value,
+      buildingTypeId:
+        value,
 
-      floorTypeId: "",
+      floorTypeId:
+        "",
 
-      floorAreas: {}
+      floorAreas:
+        {}
     }));
   }
 
+
   return (
     <section className="section-card">
+
+      {/* ------------------------------------------ */}
+      {/* SECTION HEADER */}
+      {/* ------------------------------------------ */}
 
       <div className="section-heading">
 
@@ -45,6 +59,7 @@ function PropertyDetails({
         </div>
 
         <div>
+
           <h2>
             Property Details
           </h2>
@@ -53,13 +68,17 @@ function PropertyDetails({
             Enter the basic property
             information
           </p>
+
         </div>
 
       </div>
 
+
       <div className="form-grid">
 
+        {/* ---------------------------------------- */}
         {/* TOTAL VALUE */}
+        {/* ---------------------------------------- */}
 
         <div className="field">
 
@@ -69,7 +88,9 @@ function PropertyDetails({
 
           <div className="input-prefix">
 
-            <span>₹</span>
+            <span>
+              ₹
+            </span>
 
             <input
               type="number"
@@ -81,13 +102,17 @@ function PropertyDetails({
                 handleChange
               }
               placeholder="Enter total value"
+              min="0"
             />
 
           </div>
 
         </div>
 
+
+        {/* ---------------------------------------- */}
         {/* LAND AREA */}
+        {/* ---------------------------------------- */}
 
         <div className="field">
 
@@ -107,27 +132,33 @@ function PropertyDetails({
                 handleChange
               }
               placeholder="Enter land area"
+              min="0"
             />
 
             <span>
-              sqft
+              dcml/sft
             </span>
 
           </div>
 
         </div>
 
+
+        {/* ---------------------------------------- */}
         {/* LAND VALUE */}
+        {/* ---------------------------------------- */}
 
         <div className="field">
 
           <label>
-            Land Value
+            Land Value (per dcml/sft)
           </label>
 
           <div className="input-prefix">
 
-            <span>₹</span>
+            <span>
+              ₹
+            </span>
 
             <input
               type="number"
@@ -139,13 +170,17 @@ function PropertyDetails({
                 handleChange
               }
               placeholder="Enter land value"
+              min="0"
             />
 
           </div>
 
         </div>
 
+
+        {/* ---------------------------------------- */}
         {/* BUILDING TYPE */}
+        {/* ---------------------------------------- */}
 
         <div className="field">
 
@@ -171,12 +206,14 @@ function PropertyDetails({
 
             {buildingTypes.map(
               (building) => (
+
                 <option
                   key={building.id}
                   value={building.id}
                 >
                   {building.name}
                 </option>
+
               )
             )}
 
@@ -184,7 +221,10 @@ function PropertyDetails({
 
         </div>
 
-        {/* FLOOR */}
+
+        {/* ---------------------------------------- */}
+        {/* FLOOR CONFIGURATION */}
+        {/* ---------------------------------------- */}
 
         <div className="field">
 
@@ -214,12 +254,14 @@ function PropertyDetails({
 
             {floors.map(
               (floor) => (
+
                 <option
                   key={floor.id}
                   value={floor.id}
                 >
                   {floor.name}
                 </option>
+
               )
             )}
 
@@ -227,7 +269,10 @@ function PropertyDetails({
 
         </div>
 
+
+        {/* ---------------------------------------- */}
         {/* FLOORING */}
+        {/* ---------------------------------------- */}
 
         <div className="field">
 
@@ -254,12 +299,14 @@ function PropertyDetails({
 
             {floorings.map(
               (flooring) => (
+
                 <option
                   key={flooring.id}
                   value={flooring.id}
                 >
                   {flooring.name}
                 </option>
+
               )
             )}
 
@@ -267,7 +314,10 @@ function PropertyDetails({
 
         </div>
 
+
+        {/* ---------------------------------------- */}
         {/* GST */}
+        {/* ---------------------------------------- */}
 
         <div className="field full-width">
 
@@ -283,23 +333,35 @@ function PropertyDetails({
             onChange={
               handleChange
             }
+            disabled={
+              gstLoading
+            }
           >
 
             <option value="">
-              Select GST
+              {gstLoading
+                ? "Loading GST options..."
+                : "Select GST"}
             </option>
 
-            <option value="WITH_LAND">
-              GST with Land
-            </option>
 
-            <option value="WITHOUT_LAND">
-              GST without Land
-            </option>
+            {gstOptions &&
+              gstOptions.map(
+                (option) => (
 
-            <option value="NO_GST">
-              No GST
-            </option>
+                  <option
+                    key={option.id}
+                    value={option.code}
+                  >
+                    {option.name}
+                    {option.rate !== null &&
+                      option.rate !== undefined
+                      ? ` (${option.rate}%)`
+                      : ""}
+                  </option>
+
+                )
+              )}
 
           </select>
 
@@ -311,4 +373,6 @@ function PropertyDetails({
   );
 }
 
+
 export default PropertyDetails;
+

@@ -13,12 +13,9 @@ function formatCurrency(value) {
     return "₹0";
   }
 
-  return `₹${numericValue.toLocaleString(
-    "en-IN",
-    {
-      maximumFractionDigits: 2,
-    }
-  )}`;
+  return `₹${numericValue.toLocaleString("en-IN", {
+    maximumFractionDigits: 2,
+  })}`;
 }
 
 function formatNumber(value) {
@@ -36,12 +33,9 @@ function formatNumber(value) {
     return "0";
   }
 
-  return numericValue.toLocaleString(
-    "en-IN",
-    {
-      maximumFractionDigits: 2,
-    }
-  );
+  return numericValue.toLocaleString("en-IN", {
+    maximumFractionDigits: 2,
+  });
 }
 
 function ResultCard({ result }) {
@@ -50,99 +44,55 @@ function ResultCard({ result }) {
   }
 
   /*
-   * Support both the current backend-style
-   * response and slightly different property
-   * naming conventions.
+   * Backend response:
+   *
+   * {
+   *   buildingBaseValue,
+   *   buildingCost,
+   *   extraItemsCost,
+   *   gstAmount,
+   *   boundaryCost,
+   *   parkingCost,
+   *   floorCosts,
+   *   undervalued
+   * }
    */
 
-  const totalValue =
-    result.totalValue ??
-    result.totalPropertyValue ??
-    result.totalCost ??
-    0;
-
-  const landCost =
-    result.landCost ??
-    result.landValue ??
-    0;
+  const buildingBaseValue =
+    result.buildingCost ?? 0;
 
   const buildingCost =
-    result.buildingCost ??
-    result.constructionCost ??
-    0;
+    result.buildingBaseValue ?? 0;
 
-  const gst =
-    result.gst ??
-    result.gstAmount ??
-    0;
+  const extraItemsCost =
+    result.extraItemsCost ?? 0;
+
+  const gstAmount =
+    result.gstAmount ?? 0;
 
   const boundaryCost =
-    result.boundaryCost ??
-    0;
+    result.boundaryCost ?? 0;
 
   const parkingCost =
-    result.parkingCost ??
-    0;
+    result.parkingCost ?? 0;
 
-  const eiPhExt =
-    result.eiPhExt ??
-    result.eiPhExtPw ??
-    result.eiPhExtPW ??
-    result.externalWorks ??
-    0;
+  const floorCosts =
+    Array.isArray(result.floorCosts)
+      ? result.floorCosts
+      : [];
 
-  /*
-   * Floor distribution can come from
-   * different backend response formats.
-   */
-
-  let floorDistribution =
-    result.floorDistribution ??
-    result.floorWiseDistribution ??
-    {};
-
-  /*
-   * If backend returns an array instead of
-   * an object, convert it to an object for
-   * rendering.
-   */
-
-  if (
-    Array.isArray(floorDistribution)
-  ) {
-    floorDistribution =
-      floorDistribution.reduce(
-        (accumulator, item) => {
-          const floorName =
-            item.floorName ??
-            item.name ??
-            item.floorType?.name ??
-            `Floor ${item.floorTypeId}`;
-
-          const amount =
-            item.amount ??
-            item.value ??
-            item.cost ??
-            0;
-
-          accumulator[floorName] =
-            amount;
-
-          return accumulator;
-        },
-        {}
-      );
-  }
-
-  const hasFloorDistribution =
-    Object.keys(
-      floorDistribution || {}
-    ).length > 0;
+  const undervalued =
+    Boolean(result.undervalued);
 
   return (
     <section className="result-card">
-      {/* Header */}
+
+      {/* ----------------------------------------- */}
+      {/* HEADER */}
+      {/* ----------------------------------------- */}
+
       <div className="result-header">
+
         <div>
           <span className="result-eyebrow">
             CALCULATION RESULT
@@ -153,41 +103,49 @@ function ResultCard({ result }) {
           </h2>
         </div>
 
-        <div className="result-status">
-          Calculated
+        <div
+          className={`result-status ${undervalued
+            ? "result-status-warning"
+            : "result-status-success"
+            }`}
+        >
+          {undervalued
+            ? "Undervalued"
+            : "Calculated"}
         </div>
+
       </div>
 
-      {/* Total */}
+
+      {/* ----------------------------------------- */}
+      {/* BUILDING BASE VALUE */}
+      {/* ----------------------------------------- */}
+
       <div className="result-total">
+
         <span>
-          Total Property Value
+          Building Value
         </span>
 
         <strong>
           {formatCurrency(
-            totalValue
+            buildingBaseValue
           )}
         </strong>
+
       </div>
 
-      {/* Summary */}
+
+      {/* ----------------------------------------- */}
+      {/* SUMMARY */}
+      {/* ----------------------------------------- */}
+
       <div className="result-grid">
+
         <div className="result-item">
+
           <span>
             Land Cost
-          </span>
-
-          <strong>
-            {formatCurrency(
-              landCost
-            )}
-          </strong>
-        </div>
-
-        <div className="result-item">
-          <span>
-            Building Cost
           </span>
 
           <strong>
@@ -195,32 +153,44 @@ function ResultCard({ result }) {
               buildingCost
             )}
           </strong>
+
         </div>
 
+
         <div className="result-item">
+
           <span>
             EI + PH + Ext PW
           </span>
 
           <strong>
             {formatCurrency(
-              eiPhExt
+              extraItemsCost
             )}
           </strong>
+
         </div>
 
+
         <div className="result-item">
+
           <span>
             GST
           </span>
 
           <strong>
-            {formatCurrency(gst)}
+            {formatCurrency(
+              gstAmount
+            )}
           </strong>
+
         </div>
 
-        {boundaryCost > 0 && (
+
+        {Number(boundaryCost) > 0 && (
+
           <div className="result-item">
+
             <span>
               Boundary Cost
             </span>
@@ -230,11 +200,16 @@ function ResultCard({ result }) {
                 boundaryCost
               )}
             </strong>
+
           </div>
+
         )}
 
-        {parkingCost > 0 && (
+
+        {Number(parkingCost) > 0 && (
+
           <div className="result-item">
+
             <span>
               Parking Cost
             </span>
@@ -244,14 +219,24 @@ function ResultCard({ result }) {
                 parkingCost
               )}
             </strong>
+
           </div>
+
         )}
+
       </div>
 
-      {/* Floor Distribution */}
-      {hasFloorDistribution && (
+
+      {/* ----------------------------------------- */}
+      {/* FLOOR DISTRIBUTION */}
+      {/* ----------------------------------------- */}
+
+      {floorCosts.length > 0 && (
+
         <div className="distribution">
+
           <div className="distribution-heading">
+
             <h3>
               Floor-wise Distribution
             </h3>
@@ -259,47 +244,86 @@ function ResultCard({ result }) {
             <span>
               Building Cost
             </span>
+
           </div>
 
-          {Object.entries(
-            floorDistribution
-          ).map(
-            ([floor, amount]) => (
+
+          {floorCosts.map(
+            (floor) => (
+
               <div
                 className="distribution-row"
-                key={floor}
+                key={
+                  floor.componentFloorTypeId
+                }
               >
+
                 <span>
-                  {floor}
+                  {floor.componentFloorTypeName}
                 </span>
 
                 <strong>
                   {formatCurrency(
-                    amount
+                    floor.cost
                   )}
                 </strong>
+
               </div>
+
             )
           )}
+
         </div>
+
       )}
 
-      {/* Extra information */}
-      {result.totalFloorArea !==
-        undefined && (
+
+      {/* ----------------------------------------- */}
+      {/* UNDERVALUATION MESSAGE */}
+      {/* ----------------------------------------- */}
+
+      {undervalued && (
+
         <div className="result-extra">
+
           <span>
-            Total Floor Area
+            Status
           </span>
 
           <strong>
-            {formatNumber(
-              result.totalFloorArea
-            )}{" "}
-            sqft
+            Declared value is below the
+            configured building valuation.
           </strong>
+
         </div>
+
       )}
+
+
+      {/* ----------------------------------------- */}
+      {/* TOTAL FLOOR AREA */}
+      {/* ----------------------------------------- */}
+
+      {result.totalFloorArea !==
+        undefined && (
+
+          <div className="result-extra">
+
+            <span>
+              Total Floor Area
+            </span>
+
+            <strong>
+              {formatNumber(
+                result.totalFloorArea
+              )}{" "}
+              sqft
+            </strong>
+
+          </div>
+
+        )}
+
     </section>
   );
 }
