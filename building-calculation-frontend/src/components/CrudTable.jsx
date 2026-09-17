@@ -35,7 +35,34 @@ function CrudTable({
     };
 
     useEffect(() => {
-        loadItems();
+        let cancelled = false;
+
+        const fetchItems = async () => {
+            try {
+                setLoading(true);
+                setError("");
+
+                const data = await api.get(endpoint);
+
+                if (!cancelled) {
+                    setItems(Array.isArray(data) ? data : []);
+                }
+            } catch (err) {
+                if (!cancelled) {
+                    setError(err.message);
+                }
+            } finally {
+                if (!cancelled) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        fetchItems();
+
+        return () => {
+            cancelled = true;
+        };
     }, [endpoint]);
 
     const openCreate = () => {
@@ -134,11 +161,13 @@ function CrudTable({
         try {
             setError("");
 
-            await api.delete(
-                `${endpoint}/${id}`
+            await api.delete(`${endpoint}/${id}`);
+
+            // Remove the deleted item from the existing state
+            setItems((previousItems) =>
+                previousItems.filter((item) => item.id !== id)
             );
 
-            await loadItems();
         } catch (err) {
             setError(err.message);
         }

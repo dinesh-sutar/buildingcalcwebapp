@@ -214,12 +214,6 @@ public class ValuationService {
         return numerator.divide(divisor, 0, RoundingMode.FLOOR);
     }
 
-    private BigDecimal roundUpToTen(BigDecimal value) {
-        BigDecimal ten = BigDecimal.TEN;
-        BigDecimal remainder = value.remainder(ten);
-        return remainder.compareTo(BigDecimal.ZERO) == 0 ? value : value.add(ten.subtract(remainder));
-    }
-
     private BigDecimal nvl(BigDecimal value) {
         return value == null ? BigDecimal.ZERO : value;
     }
