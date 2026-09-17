@@ -24,6 +24,10 @@ function Navbar({ activePage, setActivePage }) {
             id: "floor-rates",
             label: "Floor Rates",
         },
+        {
+            id: "boundary-types",
+            label: "Boundary Types",
+        },
     ];
 
     return (

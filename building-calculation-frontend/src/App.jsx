@@ -8,6 +8,7 @@ import Floorings from "./pages/Floorings";
 import GstOptions from "./pages/GstOptions";
 import BuildingFloorConfigs from "./pages/BuildingFloorConfigs";
 import BuildingFloorRates from "./pages/BuildingFloorRates";
+import BoundaryTypes from "./pages/BoundaryTypes";
 
 function App() {
   const [activePage, setActivePage] =
@@ -36,6 +37,9 @@ function App() {
         return (
           <BuildingFloorRates />
         );
+
+      case "boundary-types":
+        return <BoundaryTypes />;
 
       default:
         return <BuildingTypes />;
