@@ -481,7 +481,11 @@ function App() {
           <div>
 
             <p className="eyebrow">
-              BUILDING CALCULATION
+              BUILDING CALCULATION FOR ODISHA
+            </p>
+
+            <p className="maintenance-message">
+              Site Under Construction, Please Stay With Us
             </p>
 
             <h1>

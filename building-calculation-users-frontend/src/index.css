@@ -71,11 +71,9 @@ button {
   min-height: 100vh;
 
   background:
-    radial-gradient(
-      circle at 85% 0%,
+    radial-gradient(circle at 85% 0%,
       rgba(37, 99, 235, 0.08),
-      transparent 28%
-    ),
+      transparent 28%),
     #f5f7fb;
 }
 
@@ -157,6 +155,17 @@ button {
   margin: 0 0 9px;
 
   color: #2563eb;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  letter-spacing: 1.7px;
+}
+
+.maintenance-message {
+  margin: 0 0 9px;
+
+  color: #ff0000;
 
   font-size: 12px;
   font-weight: 800;
@@ -373,8 +382,8 @@ button {
     0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-.input-prefix > span,
-.input-suffix > span {
+.input-prefix>span,
+.input-suffix>span {
   flex: 0 0 auto;
 
   padding: 0 14px;
@@ -618,8 +627,7 @@ button {
   font-weight: 800;
 }
 
-.checkbox-row input:checked
-  + .custom-check {
+.checkbox-row input:checked+.custom-check {
   border-color: #2563eb;
 
   background: #2563eb;
@@ -784,7 +792,7 @@ button {
   font-size: 13px;
 }
 
-.error-message > span {
+.error-message>span {
   width: 23px;
   height: 23px;
 
@@ -1046,10 +1054,8 @@ button {
 
 @media (max-width: 900px) {
   .main-container {
-    width: min(
-      100% - 32px,
-      760px
-    );
+    width: min(100% - 32px,
+        760px);
   }
 
   .floor-grid {
@@ -1217,8 +1223,7 @@ button {
     border-right: 0;
 
     border-bottom:
-      1px solid
-      rgba(255, 255, 255, 0.08);
+      1px solid rgba(255, 255, 255, 0.08);
   }
 
   .result-item:last-child {

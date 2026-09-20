@@ -14,20 +14,23 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
 
             @Override
-            public void addCorsMappings(
-                    CorsRegistry registry) {
+            public void addCorsMappings(CorsRegistry registry) {
 
                 registry
-                        .addMapping("/api/**")
+                        .addMapping("/**")
                         .allowedOrigins(
-                                "http://localhost:5173", "http://localhost:5500", "https://odbuildingcalc.co.in",
-                            "https://www.odbuildingcalc.co.in")
+                                "http://localhost:5173",
+                                "http://localhost:5500",
+                                "https://odbuildingcalc.co.in",
+                                "https://www.odbuildingcalc.co.in"
+                        )
                         .allowedMethods(
                                 "GET",
                                 "POST",
                                 "PUT",
                                 "DELETE",
-                                "OPTIONS")
+                                "OPTIONS"
+                        )
                         .allowedHeaders("*");
             }
         };

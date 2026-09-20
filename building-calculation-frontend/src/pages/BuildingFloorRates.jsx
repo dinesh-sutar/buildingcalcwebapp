@@ -1,46 +1,91 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import api from "../api/api";
 import Modal from "../components/Modal";
 
+const EMPTY_FORM = {
+    buildingTypeId: "",
+    floorTypeId: "",
+    componentFloorTypeId: "",
+    baseRate: "",
+    active: true,
+};
+
+const GROUP_STYLES = `
+.group-card {
+    margin-bottom: 20px;
+}
+
+.group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #e5e7eb;
+    user-select: none;
+}
+
+.group-header:focus-visible {
+    outline: 2px solid #4338ca;
+    outline-offset: -2px;
+}
+
+.group-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.group-title h2 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.group-title small {
+    color: #6b7280;
+}
+
+.chevron {
+    font-size: 12px;
+    color: #6b7280;
+    width: 12px;
+}
+
+.count-badge {
+    background: #eef2ff;
+    color: #4338ca;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+`;
+
 function BuildingFloorRates() {
     const [rates, setRates] = useState([]);
-    const [buildingTypes, setBuildingTypes] =
-        useState([]);
-    const [floorTypes, setFloorTypes] =
-        useState([]);
+    const [buildingTypes, setBuildingTypes] = useState([]);
+    const [floorTypes, setFloorTypes] = useState([]);
 
-    const [showModal, setShowModal] =
-        useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [editingId, setEditingId] = useState(null);
+    const [form, setForm] = useState(EMPTY_FORM);
 
-    const [editingId, setEditingId] =
-        useState(null);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState("");
 
-    const [form, setForm] = useState({
-        buildingTypeId: "",
-        floorTypeId: "",
-        componentFloorTypeId: "",
-        baseRate: "",
-        active: true,
-    });
+    // collapsed groups, keyed by building type id
+    const [collapsed, setCollapsed] = useState({});
 
-    const [loading, setLoading] =
-        useState(true);
-
-    const [saving, setSaving] =
-        useState(false);
-
-    const [error, setError] =
-        useState("");
+    const toggleGroup = (key) =>
+        setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }));
 
     const loadData = async () => {
         try {
             setLoading(true);
 
-            const [
-                rateData,
-                buildingData,
-                floorData,
-            ] = await Promise.all([
+            const [rateData, buildingData, floorData] = await Promise.all([
                 api.get("/building-floor-rates"),
                 api.get("/building-types"),
                 api.get("/floor-types"),
@@ -60,17 +105,39 @@ function BuildingFloorRates() {
         loadData();
     }, []);
 
-    const openCreate = () => {
-        setEditingId(null);
+    // Group rates by building type, sorted by building id,
+    // and rows inside each group sorted by floor order.
+    const groupedRates = useMemo(() => {
+        const map = new Map();
 
-        setForm({
-            buildingTypeId: "",
-            floorTypeId: "",
-            componentFloorTypeId: "",
-            baseRate: "",
-            active: true,
+        rates.forEach((item) => {
+            const building = item.buildingType;
+            const key = building?.id ?? "unknown";
+
+            if (!map.has(key)) {
+                map.set(key, { key, building, items: [] });
+            }
+            map.get(key).items.push(item);
         });
 
+        return Array.from(map.values())
+            .sort((a, b) => (a.building?.id ?? 0) - (b.building?.id ?? 0))
+            .map((group) => ({
+                ...group,
+                items: [...group.items].sort(
+                    (a, b) =>
+                        (a.floorType?.displayOrder ?? 0) -
+                        (b.floorType?.displayOrder ?? 0) ||
+                        (a.componentFloorType?.displayOrder ?? 0) -
+                        (b.componentFloorType?.displayOrder ?? 0)
+                ),
+            }));
+    }, [rates]);
+
+    // Optional buildingTypeId lets a group's "+ Add" prefill the building.
+    const openCreate = (buildingTypeId = "") => {
+        setEditingId(null);
+        setForm({ ...EMPTY_FORM, buildingTypeId });
         setShowModal(true);
     };
 
@@ -78,20 +145,11 @@ function BuildingFloorRates() {
         setEditingId(item.id);
 
         setForm({
-            buildingTypeId:
-                item.buildingType?.id || "",
-
-            floorTypeId:
-                item.floorType?.id || "",
-
-            componentFloorTypeId:
-                item.componentFloorType?.id || "",
-
-            baseRate:
-                item.baseRate ?? "",
-
-            active:
-                item.active ?? true,
+            buildingTypeId: item.buildingType?.id || "",
+            floorTypeId: item.floorType?.id || "",
+            componentFloorTypeId: item.componentFloorType?.id || "",
+            baseRate: item.baseRate ?? "",
+            active: item.active ?? true,
         });
 
         setShowModal(true);
@@ -105,39 +163,21 @@ function BuildingFloorRates() {
             setError("");
 
             const payload = {
-                buildingTypeId:
-                    Number(form.buildingTypeId),
-
-                floorTypeId:
-                    Number(form.floorTypeId),
-
-                componentFloorTypeId:
-                    Number(
-                        form.componentFloorTypeId
-                    ),
-
+                buildingTypeId: Number(form.buildingTypeId),
+                floorTypeId: Number(form.floorTypeId),
+                componentFloorTypeId: Number(form.componentFloorTypeId),
                 baseRate:
-                    form.baseRate === ""
-                        ? null
-                        : Number(form.baseRate),
-
+                    form.baseRate === "" ? null : Number(form.baseRate),
                 active: Boolean(form.active),
             };
 
             if (editingId) {
-                await api.put(
-                    `/building-floor-rates/${editingId}`,
-                    payload
-                );
+                await api.put(`/building-floor-rates/${editingId}`, payload);
             } else {
-                await api.post(
-                    "/building-floor-rates",
-                    payload
-                );
+                await api.post("/building-floor-rates", payload);
             }
 
             setShowModal(false);
-
             await loadData();
         } catch (err) {
             setError(err.message);
@@ -147,65 +187,72 @@ function BuildingFloorRates() {
     };
 
     const deleteRate = async (id) => {
-        if (
-            !window.confirm(
-                "Are you sure you want to delete this rate?"
-            )
-        ) {
+        if (!window.confirm("Are you sure you want to delete this rate?")) {
             return;
         }
 
         try {
-            await api.delete(
-                `/building-floor-rates/${id}`
-            );
-
+            await api.delete(`/building-floor-rates/${id}`);
             await loadData();
         } catch (err) {
             setError(err.message);
         }
     };
 
-    return (
-        <div className="page">
-            <div className="page-header">
-                <div>
-                    <h1>
-                        Building Floor Rates
-                    </h1>
+    const renderGroup = (group) => {
+        const isCollapsed = Boolean(collapsed[group.key]);
+        const count = group.items.length;
 
-                    <p>
-                        Manage rates for building and
-                        floor combinations.
-                    </p>
-                </div>
-
-                <button
-                    className="primary-button"
-                    onClick={openCreate}
+        return (
+            <div className="table-card group-card" key={group.key}>
+                <div
+                    className="group-header"
+                    role="button"
+                    tabIndex={0}
+                    aria-expanded={!isCollapsed}
+                    onClick={() => toggleGroup(group.key)}
+                    onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            toggleGroup(group.key);
+                        }
+                    }}
                 >
-                    + Add Rate
-                </button>
-            </div>
+                    <div className="group-title">
+                        <span className="chevron" aria-hidden="true">
+                            {isCollapsed ? "▶" : "▼"}
+                        </span>
 
-            {error && (
-                <div className="error-message">
-                    {error}
-                </div>
-            )}
+                        <div>
+                            <h2>{group.building?.name ?? "Unknown building type"}</h2>
+                            {group.building?.code && (
+                                <small>{group.building.code}</small>
+                            )}
+                        </div>
 
-            <div className="table-card">
-                {loading ? (
-                    <div className="loading">
-                        Loading...
+                        <span className="count-badge">
+                            {count} {count === 1 ? "rate" : "rates"}
+                        </span>
                     </div>
-                ) : (
+
+                    <button
+                        type="button"
+                        className="secondary-button"
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            openCreate(group.building?.id ?? "");
+                        }}
+                    >
+                        + Add rate
+                    </button>
+                </div>
+
+                {!isCollapsed && (
                     <div className="table-wrapper">
                         <table>
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>Building Type</th>
                                     <th>Floor Type</th>
                                     <th>Component Floor</th>
                                     <th>Base Rate</th>
@@ -215,39 +262,14 @@ function BuildingFloorRates() {
                             </thead>
 
                             <tbody>
-                                {rates.map((item) => (
+                                {group.items.map((item) => (
                                     <tr key={item.id}>
                                         <td>{item.id}</td>
-
+                                        <td>{item.floorType?.name}</td>
+                                        <td>{item.componentFloorType?.name}</td>
                                         <td>
-                                            {
-                                                item.buildingType
-                                                    ?.name
-                                            }
+                                            ₹ {Number(item.baseRate).toFixed(2)}
                                         </td>
-
-                                        <td>
-                                            {
-                                                item.floorType
-                                                    ?.name
-                                            }
-                                        </td>
-
-                                        <td>
-                                            {
-                                                item
-                                                    .componentFloorType
-                                                    ?.name
-                                            }
-                                        </td>
-
-                                        <td>
-                                            ₹{" "}
-                                            {Number(
-                                                item.baseRate
-                                            ).toFixed(2)}
-                                        </td>
-
                                         <td>
                                             <span
                                                 className={
@@ -256,30 +278,21 @@ function BuildingFloorRates() {
                                                         : "status inactive"
                                                 }
                                             >
-                                                {item.active
-                                                    ? "Active"
-                                                    : "Inactive"}
+                                                {item.active ? "Active" : "Inactive"}
                                             </span>
                                         </td>
-
                                         <td>
                                             <div className="actions">
                                                 <button
                                                     className="edit-button"
-                                                    onClick={() =>
-                                                        openEdit(item)
-                                                    }
+                                                    onClick={() => openEdit(item)}
                                                 >
                                                     Edit
                                                 </button>
 
                                                 <button
                                                     className="delete-button"
-                                                    onClick={() =>
-                                                        deleteRate(
-                                                            item.id
-                                                        )
-                                                    }
+                                                    onClick={() => deleteRate(item.id)}
                                                 >
                                                     Delete
                                                 </button>
@@ -289,15 +302,43 @@ function BuildingFloorRates() {
                                 ))}
                             </tbody>
                         </table>
-
-                        {rates.length === 0 && (
-                            <div className="empty">
-                                No rates found.
-                            </div>
-                        )}
                     </div>
                 )}
             </div>
+        );
+    };
+
+    return (
+        <div className="page">
+            <style>{GROUP_STYLES}</style>
+
+            <div className="page-header">
+                <div>
+                    <h1>Building Floor Rates</h1>
+                    <p>Manage rates for building and floor combinations.</p>
+                </div>
+
+                <button
+                    className="primary-button"
+                    onClick={() => openCreate()}
+                >
+                    + Add Rate
+                </button>
+            </div>
+
+            {error && <div className="error-message">{error}</div>}
+
+            {loading ? (
+                <div className="table-card">
+                    <div className="loading">Loading...</div>
+                </div>
+            ) : groupedRates.length === 0 ? (
+                <div className="table-card">
+                    <div className="empty">No rates found.</div>
+                </div>
+            ) : (
+                groupedRates.map(renderGroup)
+            )}
 
             {showModal && (
                 <Modal
@@ -306,126 +347,80 @@ function BuildingFloorRates() {
                             ? "Edit Building Floor Rate"
                             : "Add Building Floor Rate"
                     }
-                    onClose={() =>
-                        setShowModal(false)
-                    }
+                    onClose={() => setShowModal(false)}
                 >
-                    <form
-                        className="form"
-                        onSubmit={handleSubmit}
-                    >
+                    <form className="form" onSubmit={handleSubmit}>
                         <div className="form-group">
-                            <label>
-                                Building Type
-                            </label>
+                            <label>Building Type</label>
 
                             <select
-                                value={
-                                    form.buildingTypeId
-                                }
+                                value={form.buildingTypeId}
                                 onChange={(event) =>
                                     setForm({
                                         ...form,
-                                        buildingTypeId:
-                                            event.target.value,
+                                        buildingTypeId: event.target.value,
                                     })
                                 }
                                 required
                             >
-                                <option value="">
-                                    Select Building Type
-                                </option>
+                                <option value="">Select Building Type</option>
 
-                                {buildingTypes.map(
-                                    (building) => (
-                                        <option
-                                            key={building.id}
-                                            value={building.id}
-                                        >
-                                            {building.code} -{" "}
-                                            {building.name}
-                                        </option>
-                                    )
-                                )}
+                                {buildingTypes.map((building) => (
+                                    <option key={building.id} value={building.id}>
+                                        {building.code} - {building.name}
+                                    </option>
+                                ))}
                             </select>
                         </div>
 
                         <div className="form-group">
-                            <label>
-                                Floor Type
-                            </label>
+                            <label>Floor Type</label>
 
                             <select
-                                value={
-                                    form.floorTypeId
-                                }
+                                value={form.floorTypeId}
                                 onChange={(event) =>
                                     setForm({
                                         ...form,
-                                        floorTypeId:
-                                            event.target.value,
+                                        floorTypeId: event.target.value,
                                     })
                                 }
                                 required
                             >
-                                <option value="">
-                                    Select Floor Type
-                                </option>
+                                <option value="">Select Floor Type</option>
 
-                                {floorTypes.map(
-                                    (floor) => (
-                                        <option
-                                            key={floor.id}
-                                            value={floor.id}
-                                        >
-                                            {floor.code} -{" "}
-                                            {floor.name}
-                                        </option>
-                                    )
-                                )}
+                                {floorTypes.map((floor) => (
+                                    <option key={floor.id} value={floor.id}>
+                                        {floor.code} - {floor.name}
+                                    </option>
+                                ))}
                             </select>
                         </div>
 
                         <div className="form-group">
-                            <label>
-                                Component Floor Type
-                            </label>
+                            <label>Component Floor Type</label>
 
                             <select
-                                value={
-                                    form.componentFloorTypeId
-                                }
+                                value={form.componentFloorTypeId}
                                 onChange={(event) =>
                                     setForm({
                                         ...form,
-                                        componentFloorTypeId:
-                                            event.target.value,
+                                        componentFloorTypeId: event.target.value,
                                     })
                                 }
                                 required
                             >
-                                <option value="">
-                                    Select Component Floor
-                                </option>
+                                <option value="">Select Component Floor</option>
 
-                                {floorTypes.map(
-                                    (floor) => (
-                                        <option
-                                            key={floor.id}
-                                            value={floor.id}
-                                        >
-                                            {floor.code} -{" "}
-                                            {floor.name}
-                                        </option>
-                                    )
-                                )}
+                                {floorTypes.map((floor) => (
+                                    <option key={floor.id} value={floor.id}>
+                                        {floor.code} - {floor.name}
+                                    </option>
+                                ))}
                             </select>
                         </div>
 
                         <div className="form-group">
-                            <label>
-                                Base Rate
-                            </label>
+                            <label>Base Rate</label>
 
                             <input
                                 type="number"
@@ -434,8 +429,7 @@ function BuildingFloorRates() {
                                 onChange={(event) =>
                                     setForm({
                                         ...form,
-                                        baseRate:
-                                            event.target.value,
+                                        baseRate: event.target.value,
                                     })
                                 }
                                 required
@@ -450,13 +444,10 @@ function BuildingFloorRates() {
                                     onChange={(event) =>
                                         setForm({
                                             ...form,
-                                            active:
-                                                event.target
-                                                    .checked,
+                                            active: event.target.checked,
                                         })
                                     }
                                 />
-
                                 Active
                             </label>
                         </div>
@@ -465,9 +456,7 @@ function BuildingFloorRates() {
                             <button
                                 type="button"
                                 className="secondary-button"
-                                onClick={() =>
-                                    setShowModal(false)
-                                }
+                                onClick={() => setShowModal(false)}
                             >
                                 Cancel
                             </button>
