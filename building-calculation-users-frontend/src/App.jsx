@@ -1,4 +1,3 @@
-
 import {
   useEffect,
   useMemo,
@@ -21,6 +20,8 @@ import {
 import {
   getGstOptions
 } from "./api/gstApi";
+import { trackVisitor } from "./api/analyticsApi";
+
 
 
 const initialForm = {
@@ -60,6 +61,17 @@ function App() {
     error: configError,
     getFloorsForBuilding
   } = useBuildingConfig();
+
+
+  // --------------------------------------------------
+  // VISITOR TRACKING
+  // --------------------------------------------------
+
+  useEffect(() => {
+
+    trackVisitor();
+
+  }, []);
 
 
   // --------------------------------------------------
