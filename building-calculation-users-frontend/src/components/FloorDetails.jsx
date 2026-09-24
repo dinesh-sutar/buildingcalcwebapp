@@ -226,7 +226,7 @@ function FloorDetails({
                       </strong>
 
                       <small>
-                        Built-up area
+                        Transferable area
                       </small>
 
                     </div>
