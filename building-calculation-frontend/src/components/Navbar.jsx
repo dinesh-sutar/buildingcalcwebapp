@@ -1,6 +1,10 @@
 function Navbar({ activePage, setActivePage }) {
     const menuItems = [
         {
+            id: "visitor-analytics",
+            label: "Visitor Analytics",
+        },
+        {
             id: "building-types",
             label: "Building Types",
         },
@@ -32,7 +36,9 @@ function Navbar({ activePage, setActivePage }) {
 
     return (
         <aside className="sidebar">
+
             <div className="logo">
+
                 <div className="logo-icon">
                     BC
                 </div>
@@ -46,10 +52,14 @@ function Navbar({ activePage, setActivePage }) {
                         Admin Panel
                     </span>
                 </div>
+
             </div>
 
+
             <nav>
+
                 {menuItems.map((item) => (
+
                     <button
                         key={item.id}
                         className={
@@ -63,8 +73,11 @@ function Navbar({ activePage, setActivePage }) {
                     >
                         {item.label}
                     </button>
+
                 ))}
+
             </nav>
+
         </aside>
     );
 }

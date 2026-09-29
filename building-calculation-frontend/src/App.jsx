@@ -9,13 +9,18 @@ import GstOptions from "./pages/GstOptions";
 import BuildingFloorConfigs from "./pages/BuildingFloorConfigs";
 import BuildingFloorRates from "./pages/BuildingFloorRates";
 import BoundaryTypes from "./pages/BoundaryTypes";
+import VisitorAnalytics from "./pages/VisitorAnalytics";
 
 function App() {
   const [activePage, setActivePage] =
-    useState("building-types");
+    useState("visitor-analytics");
 
   const renderPage = () => {
     switch (activePage) {
+
+      case "visitor-analytics":
+        return <VisitorAnalytics />;
+
       case "building-types":
         return <BuildingTypes />;
 
@@ -29,25 +34,22 @@ function App() {
         return <GstOptions />;
 
       case "floor-configs":
-        return (
-          <BuildingFloorConfigs />
-        );
+        return <BuildingFloorConfigs />;
 
       case "floor-rates":
-        return (
-          <BuildingFloorRates />
-        );
+        return <BuildingFloorRates />;
 
       case "boundary-types":
         return <BoundaryTypes />;
 
       default:
-        return <BuildingTypes />;
+        return <VisitorAnalytics />;
     }
   };
 
   return (
     <div className="app">
+
       <Navbar
         activePage={activePage}
         setActivePage={setActivePage}
@@ -56,6 +58,7 @@ function App() {
       <main className="main-content">
         {renderPage()}
       </main>
+
     </div>
   );
 }
