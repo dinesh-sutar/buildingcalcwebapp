@@ -20,7 +20,7 @@ import com.raaj.building_calculation_backend.entity.Flooring;
 import com.raaj.building_calculation_backend.entity.GstOption;
 import com.raaj.building_calculation_backend.repository.BuildingFloorConfigRepository;
 import com.raaj.building_calculation_backend.repository.BuildingFloorRateRepository;
-import com.raaj.building_calculation_backend.repository.BuildingTypeRepository;
+import com.raaj.building_calculation_backend.repository.StructureTypeRepository;
 import com.raaj.building_calculation_backend.repository.FlooringRepository;
 import com.raaj.building_calculation_backend.repository.GstOptionRepository;
 
@@ -36,7 +36,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ValuationService {
 
-    private final BuildingTypeRepository buildingTypeRepository;
+    private final StructureTypeRepository buildingTypeRepository;
     private final BuildingFloorConfigRepository buildingFloorConfigRepository;
     private final BuildingFloorRateRepository buildingFloorRateRepository;
     private final FlooringRepository flooringRepository;

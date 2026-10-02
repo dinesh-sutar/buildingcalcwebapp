@@ -15,14 +15,14 @@ import lombok.Setter;
 public class BuildingFloorConfigResponse {
 
     private Long id;
-    private BuildingTypeResponse buildingType;
+    private StructureTypeResponse buildingType;
     private FloorTypeResponse floorType;
     private Boolean enabled;
 
     public static BuildingFloorConfigResponse from(BuildingFloorConfig entity) {
         return new BuildingFloorConfigResponse(
                 entity.getId(),
-                BuildingTypeResponse.from(entity.getBuildingType()),
+                StructureTypeResponse.from(entity.getBuildingType()),
                 FloorTypeResponse.from(entity.getFloorType()),
                 entity.getEnabled());
     }

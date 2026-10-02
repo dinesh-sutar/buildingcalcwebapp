@@ -31,7 +31,7 @@ public class BuildingFloorConfig {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "building_type_id", nullable = false)
-    private BuildingType buildingType;
+    private StructureType buildingType;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "floor_type_id", nullable = false)

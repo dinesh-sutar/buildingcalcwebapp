@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BuildingTypeRequest {
+public class StructureTypeRequest {
 
     private String code;
 

@@ -17,7 +17,7 @@ import lombok.Setter;
 public class BuildingFloorRateResponse {
 
     private Long id;
-    private BuildingTypeResponse buildingType;
+    private StructureTypeResponse buildingType;
     private FloorTypeResponse floorType;
     private FloorTypeResponse componentFloorType;
     private BigDecimal baseRate;
@@ -26,7 +26,7 @@ public class BuildingFloorRateResponse {
     public static BuildingFloorRateResponse from(BuildingFloorRate entity) {
         return new BuildingFloorRateResponse(
                 entity.getId(),
-                BuildingTypeResponse.from(entity.getBuildingType()),
+                StructureTypeResponse.from(entity.getBuildingType()),
                 FloorTypeResponse.from(entity.getFloorType()),
                 FloorTypeResponse.from(entity.getComponentFloorType()),
                 entity.getBaseRate(),

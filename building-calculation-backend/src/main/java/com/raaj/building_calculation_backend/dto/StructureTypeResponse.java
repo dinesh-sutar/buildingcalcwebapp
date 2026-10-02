@@ -1,7 +1,7 @@
 // dto/BuildingTypeResponse.java
 package com.raaj.building_calculation_backend.dto;
 
-import com.raaj.building_calculation_backend.entity.BuildingType;
+import com.raaj.building_calculation_backend.entity.StructureType;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,15 +12,15 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BuildingTypeResponse {
+public class StructureTypeResponse {
 
     private Long id;
     private String code;
     private String name;
     private Boolean active;
 
-    public static BuildingTypeResponse from(BuildingType entity) {
-        return new BuildingTypeResponse(
+    public static StructureTypeResponse from(StructureType entity) {
+        return new StructureTypeResponse(
                 entity.getId(),
                 entity.getCode(),
                 entity.getName(),

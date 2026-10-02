@@ -17,7 +17,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BuildingType {
+public class StructureType {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
