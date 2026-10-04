@@ -6,8 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.raaj.building_calculation_backend.dto.StructureTypeRequest;
-import com.raaj.building_calculation_backend.dto.StructureTypeResponse;
+import com.raaj.building_calculation_backend.dto.structure_type.StructureTypeRequest;
+import com.raaj.building_calculation_backend.dto.structure_type.StructureTypeResponse;
 import com.raaj.building_calculation_backend.service.StructureTypeService;
 
 import lombok.RequiredArgsConstructor;

@@ -5,8 +5,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.raaj.building_calculation_backend.dto.GstOptionRequest;
-import com.raaj.building_calculation_backend.dto.GstOptionResponse;
+import com.raaj.building_calculation_backend.dto.gst.GstOptionRequest;
+import com.raaj.building_calculation_backend.dto.gst.GstOptionResponse;
 import com.raaj.building_calculation_backend.entity.GstOption;
 import com.raaj.building_calculation_backend.repository.GstOptionRepository;
 

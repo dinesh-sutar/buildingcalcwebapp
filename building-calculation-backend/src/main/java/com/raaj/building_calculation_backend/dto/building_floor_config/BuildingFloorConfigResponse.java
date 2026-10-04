@@ -1,6 +1,8 @@
 // dto/BuildingFloorConfigResponse.java
-package com.raaj.building_calculation_backend.dto;
+package com.raaj.building_calculation_backend.dto.building_floor_config;
 
+import com.raaj.building_calculation_backend.dto.floor.FloorTypeResponse;
+import com.raaj.building_calculation_backend.dto.structure_type.StructureTypeResponse;
 import com.raaj.building_calculation_backend.entity.BuildingFloorConfig;
 
 import lombok.AllArgsConstructor;

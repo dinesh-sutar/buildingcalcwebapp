@@ -1,8 +1,8 @@
 package com.raaj.building_calculation_backend.service;
 
 import com.raaj.building_calculation_backend.constant.VisitorPeriod;
-import com.raaj.building_calculation_backend.dto.VisitorResponse;
-import com.raaj.building_calculation_backend.dto.VisitorStatsDTO;
+import com.raaj.building_calculation_backend.dto.visitor.VisitorResponse;
+import com.raaj.building_calculation_backend.dto.visitor.VisitorStatsDTO;
 import com.raaj.building_calculation_backend.entity.Visitor;
 import com.raaj.building_calculation_backend.entity.VisitorLog;
 import com.raaj.building_calculation_backend.repository.VisitorLogRepository;

@@ -1,5 +1,5 @@
 // dto/FloorTypeResponse.java
-package com.raaj.building_calculation_backend.dto;
+package com.raaj.building_calculation_backend.dto.floor;
 
 import com.raaj.building_calculation_backend.entity.FloorType;
 

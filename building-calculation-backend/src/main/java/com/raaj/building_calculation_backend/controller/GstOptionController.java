@@ -6,8 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.raaj.building_calculation_backend.dto.GstOptionRequest;
-import com.raaj.building_calculation_backend.dto.GstOptionResponse;
+import com.raaj.building_calculation_backend.dto.gst.GstOptionRequest;
+import com.raaj.building_calculation_backend.dto.gst.GstOptionResponse;
 import com.raaj.building_calculation_backend.service.GstOptionService;
 
 import lombok.RequiredArgsConstructor;

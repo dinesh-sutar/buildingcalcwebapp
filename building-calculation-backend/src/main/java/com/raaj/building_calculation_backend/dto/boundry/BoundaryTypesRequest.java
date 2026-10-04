@@ -1,4 +1,4 @@
-package com.raaj.building_calculation_backend.dto;
+package com.raaj.building_calculation_backend.dto.boundry;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;

@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.raaj.building_calculation_backend.dto.BuildingFloorConfigRequest;
-import com.raaj.building_calculation_backend.dto.BuildingFloorConfigResponse;
+import com.raaj.building_calculation_backend.dto.building_floor_config.BuildingFloorConfigRequest;
+import com.raaj.building_calculation_backend.dto.building_floor_config.BuildingFloorConfigResponse;
 import com.raaj.building_calculation_backend.service.BuildingFloorConfigService;
 
 import lombok.RequiredArgsConstructor;

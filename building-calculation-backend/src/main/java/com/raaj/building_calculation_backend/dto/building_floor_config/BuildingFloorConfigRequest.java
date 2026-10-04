@@ -1,4 +1,4 @@
-package com.raaj.building_calculation_backend.dto;
+package com.raaj.building_calculation_backend.dto.building_floor_config;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

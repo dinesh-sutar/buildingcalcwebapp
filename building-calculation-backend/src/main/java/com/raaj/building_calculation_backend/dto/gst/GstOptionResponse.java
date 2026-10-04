@@ -1,9 +1,9 @@
-// dto/FlooringResponse.java
-package com.raaj.building_calculation_backend.dto;
+// dto/GstOptionResponse.java
+package com.raaj.building_calculation_backend.dto.gst;
 
 import java.math.BigDecimal;
 
-import com.raaj.building_calculation_backend.entity.Flooring;
+import com.raaj.building_calculation_backend.entity.GstOption;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,7 +14,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class FlooringResponse {
+public class GstOptionResponse {
 
     private Long id;
     private String code;
@@ -22,8 +22,8 @@ public class FlooringResponse {
     private BigDecimal rate;
     private Boolean active;
 
-    public static FlooringResponse from(Flooring entity) {
-        return new FlooringResponse(
+    public static GstOptionResponse from(GstOption entity) {
+        return new GstOptionResponse(
                 entity.getId(),
                 entity.getCode(),
                 entity.getName(),

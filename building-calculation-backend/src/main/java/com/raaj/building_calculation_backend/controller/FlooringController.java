@@ -6,8 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.raaj.building_calculation_backend.dto.FlooringRequest;
-import com.raaj.building_calculation_backend.dto.FlooringResponse;
+import com.raaj.building_calculation_backend.dto.flooring_type.FlooringRequest;
+import com.raaj.building_calculation_backend.dto.flooring_type.FlooringResponse;
 import com.raaj.building_calculation_backend.service.FlooringService;
 
 import lombok.RequiredArgsConstructor;

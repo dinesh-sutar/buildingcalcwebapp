@@ -1,8 +1,8 @@
 package com.raaj.building_calculation_backend.controller;
 
 import com.raaj.building_calculation_backend.constant.VisitorPeriod;
-import com.raaj.building_calculation_backend.dto.VisitorResponse;
-import com.raaj.building_calculation_backend.dto.VisitorStatsDTO;
+import com.raaj.building_calculation_backend.dto.visitor.VisitorResponse;
+import com.raaj.building_calculation_backend.dto.visitor.VisitorStatsDTO;
 import com.raaj.building_calculation_backend.service.VisitorService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

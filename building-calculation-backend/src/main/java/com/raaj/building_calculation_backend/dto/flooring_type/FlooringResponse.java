@@ -1,7 +1,9 @@
-// dto/BuildingTypeResponse.java
-package com.raaj.building_calculation_backend.dto;
+// dto/FlooringResponse.java
+package com.raaj.building_calculation_backend.dto.flooring_type;
 
-import com.raaj.building_calculation_backend.entity.StructureType;
+import java.math.BigDecimal;
+
+import com.raaj.building_calculation_backend.entity.Flooring;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,18 +14,20 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class StructureTypeResponse {
+public class FlooringResponse {
 
     private Long id;
     private String code;
     private String name;
+    private BigDecimal rate;
     private Boolean active;
 
-    public static StructureTypeResponse from(StructureType entity) {
-        return new StructureTypeResponse(
+    public static FlooringResponse from(Flooring entity) {
+        return new FlooringResponse(
                 entity.getId(),
                 entity.getCode(),
                 entity.getName(),
+                entity.getRate(),
                 entity.getActive());
     }
 }

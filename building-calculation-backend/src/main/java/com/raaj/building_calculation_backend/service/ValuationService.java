@@ -10,10 +10,10 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.raaj.building_calculation_backend.dto.FloorAreaInput;
-import com.raaj.building_calculation_backend.dto.FloorCostOutput;
-import com.raaj.building_calculation_backend.dto.ValuationRequest;
-import com.raaj.building_calculation_backend.dto.ValuationResponse;
+import com.raaj.building_calculation_backend.dto.floor.FloorAreaInput;
+import com.raaj.building_calculation_backend.dto.floor.FloorCostOutput;
+import com.raaj.building_calculation_backend.dto.valuation.ValuationRequest;
+import com.raaj.building_calculation_backend.dto.valuation.ValuationResponse;
 import com.raaj.building_calculation_backend.entity.BuildingFloorRate;
 import com.raaj.building_calculation_backend.entity.FloorType;
 import com.raaj.building_calculation_backend.entity.Flooring;

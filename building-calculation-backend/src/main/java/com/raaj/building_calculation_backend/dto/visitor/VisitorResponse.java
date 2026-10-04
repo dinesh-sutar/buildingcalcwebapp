@@ -1,4 +1,4 @@
-package com.raaj.building_calculation_backend.dto;
+package com.raaj.building_calculation_backend.dto.visitor;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

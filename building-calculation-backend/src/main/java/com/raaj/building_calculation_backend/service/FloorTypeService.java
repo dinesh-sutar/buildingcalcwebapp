@@ -5,8 +5,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.raaj.building_calculation_backend.dto.FloorTypeRequest;
-import com.raaj.building_calculation_backend.dto.FloorTypeResponse;
+import com.raaj.building_calculation_backend.dto.floor.FloorTypeRequest;
+import com.raaj.building_calculation_backend.dto.floor.FloorTypeResponse;
 import com.raaj.building_calculation_backend.entity.FloorType;
 import com.raaj.building_calculation_backend.repository.FloorTypeRepository;
 

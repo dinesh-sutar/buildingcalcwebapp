@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.raaj.building_calculation_backend.dto.ValuationRequest;
-import com.raaj.building_calculation_backend.dto.ValuationResponse;
+import com.raaj.building_calculation_backend.dto.valuation.ValuationRequest;
+import com.raaj.building_calculation_backend.dto.valuation.ValuationResponse;
 import com.raaj.building_calculation_backend.service.ValuationService;
 
 import lombok.RequiredArgsConstructor;

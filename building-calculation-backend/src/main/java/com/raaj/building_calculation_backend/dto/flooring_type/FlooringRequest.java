@@ -1,4 +1,4 @@
-package com.raaj.building_calculation_backend.dto;
+package com.raaj.building_calculation_backend.dto.flooring_type;
 
 import java.math.BigDecimal;
 

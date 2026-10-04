@@ -1,4 +1,6 @@
-package com.raaj.building_calculation_backend.dto;
+package com.raaj.building_calculation_backend.dto.gst;
+
+import java.math.BigDecimal;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,13 +11,13 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class FloorTypeRequest {
+public class GstOptionRequest {
 
     private String code;
 
     private String name;
 
-    private Integer displayOrder;
+    private BigDecimal rate;
 
     private Boolean active;
 }

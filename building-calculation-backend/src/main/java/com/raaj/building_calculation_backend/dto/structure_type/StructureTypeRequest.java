@@ -1,6 +1,4 @@
-package com.raaj.building_calculation_backend.dto;
-
-import java.math.BigDecimal;
+package com.raaj.building_calculation_backend.dto.structure_type;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,13 +9,11 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GstOptionRequest {
+public class StructureTypeRequest {
 
     private String code;
 
     private String name;
-
-    private BigDecimal rate;
 
     private Boolean active;
 }

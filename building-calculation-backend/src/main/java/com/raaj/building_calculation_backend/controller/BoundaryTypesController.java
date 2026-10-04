@@ -1,6 +1,6 @@
 package com.raaj.building_calculation_backend.controller;
 
-import com.raaj.building_calculation_backend.dto.BoundaryTypesRequest;
+import com.raaj.building_calculation_backend.dto.boundry.BoundaryTypesRequest;
 import com.raaj.building_calculation_backend.entity.BoundaryTypes;
 import com.raaj.building_calculation_backend.service.BoundaryTypesService;
 

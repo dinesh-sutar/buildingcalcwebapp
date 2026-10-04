@@ -1,8 +1,10 @@
 // dto/BuildingFloorRateResponse.java
-package com.raaj.building_calculation_backend.dto;
+package com.raaj.building_calculation_backend.dto.building_floor_rate;
 
 import java.math.BigDecimal;
 
+import com.raaj.building_calculation_backend.dto.floor.FloorTypeResponse;
+import com.raaj.building_calculation_backend.dto.structure_type.StructureTypeResponse;
 import com.raaj.building_calculation_backend.entity.BuildingFloorRate;
 
 import lombok.AllArgsConstructor;

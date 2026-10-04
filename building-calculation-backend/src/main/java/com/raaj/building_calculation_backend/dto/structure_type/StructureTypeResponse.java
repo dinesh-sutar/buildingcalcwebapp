@@ -1,9 +1,7 @@
-// dto/GstOptionResponse.java
-package com.raaj.building_calculation_backend.dto;
+// dto/BuildingTypeResponse.java
+package com.raaj.building_calculation_backend.dto.structure_type;
 
-import java.math.BigDecimal;
-
-import com.raaj.building_calculation_backend.entity.GstOption;
+import com.raaj.building_calculation_backend.entity.StructureType;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,20 +12,18 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GstOptionResponse {
+public class StructureTypeResponse {
 
     private Long id;
     private String code;
     private String name;
-    private BigDecimal rate;
     private Boolean active;
 
-    public static GstOptionResponse from(GstOption entity) {
-        return new GstOptionResponse(
+    public static StructureTypeResponse from(StructureType entity) {
+        return new StructureTypeResponse(
                 entity.getId(),
                 entity.getCode(),
                 entity.getName(),
-                entity.getRate(),
                 entity.getActive());
     }
 }

@@ -1,6 +1,6 @@
 package com.raaj.building_calculation_backend.service;
 
-import com.raaj.building_calculation_backend.dto.BoundaryTypesRequest;
+import com.raaj.building_calculation_backend.dto.boundry.BoundaryTypesRequest;
 import com.raaj.building_calculation_backend.entity.BoundaryTypes;
 import com.raaj.building_calculation_backend.repository.BoundaryTypesRepository;
 import com.raaj.building_calculation_backend.service.BoundaryTypesService;
@@ -15,7 +15,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class  BoundaryTypesService {
+public class BoundaryTypesService {
 
     private final BoundaryTypesRepository repository;
 
@@ -35,8 +35,7 @@ public class  BoundaryTypesService {
         boundaryType.setName(request.getName());
         boundaryType.setRate(request.getRate());
         boundaryType.setActive(
-                request.getActive() != null ? request.getActive() : true
-        );
+                request.getActive() != null ? request.getActive() : true);
 
         return repository.save(boundaryType);
     }
@@ -50,11 +49,8 @@ public class  BoundaryTypesService {
     public BoundaryTypes getById(Long id) {
 
         return repository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Boundary type not found with id: " + id
-                        )
-                );
+                .orElseThrow(() -> new RuntimeException(
+                        "Boundary type not found with id: " + id));
     }
 
     public BoundaryTypes update(Long id, BoundaryTypesRequest request) {

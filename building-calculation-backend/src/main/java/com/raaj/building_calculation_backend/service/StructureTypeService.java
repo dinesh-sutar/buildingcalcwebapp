@@ -5,8 +5,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.raaj.building_calculation_backend.dto.StructureTypeRequest;
-import com.raaj.building_calculation_backend.dto.StructureTypeResponse;
+import com.raaj.building_calculation_backend.dto.structure_type.StructureTypeRequest;
+import com.raaj.building_calculation_backend.dto.structure_type.StructureTypeResponse;
 import com.raaj.building_calculation_backend.entity.StructureType;
 import com.raaj.building_calculation_backend.repository.StructureTypeRepository;
 

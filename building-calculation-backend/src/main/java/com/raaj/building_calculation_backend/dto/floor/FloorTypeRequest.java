@@ -1,4 +1,4 @@
-package com.raaj.building_calculation_backend.dto;
+package com.raaj.building_calculation_backend.dto.floor;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,11 +9,13 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class StructureTypeRequest {
+public class FloorTypeRequest {
 
     private String code;
 
     private String name;
+
+    private Integer displayOrder;
 
     private Boolean active;
 }
