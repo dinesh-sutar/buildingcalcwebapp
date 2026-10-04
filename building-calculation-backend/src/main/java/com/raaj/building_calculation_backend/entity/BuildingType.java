@@ -15,28 +15,36 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * A building that belongs to a structure type.
+ * Floor selections (BuildingFloorConfig) and their rates (BuildingFloorRate)
+ * hang off this entity.
+ */
 @Entity
-@Table(name = "building_floor_configs", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_building_type_floor_config", columnNames = { "building_type_id", "floor_type_id" })
+@Table(name = "building_types", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_building_type_structure_code", columnNames = { "structure_type_id", "code" }),
+        @UniqueConstraint(name = "uk_building_type_structure_name", columnNames = { "structure_type_id", "name" })
 })
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BuildingFloorConfig {
+public class BuildingType {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "building_type_id", nullable = false)
-    private BuildingType buildingType;
+    @JoinColumn(name = "structure_type_id", nullable = false)
+    private StructureType structureType;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "floor_type_id", nullable = false)
-    private FloorType floorType;
+    @Column(nullable = false, length = 100)
+    private String code;
+
+    @Column(nullable = false, length = 200)
+    private String name;
 
     @Column(nullable = false)
-    private Boolean enabled = true;
+    private Boolean active = true;
 }

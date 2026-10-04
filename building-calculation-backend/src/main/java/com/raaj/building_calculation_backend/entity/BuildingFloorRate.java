@@ -37,7 +37,7 @@ public class BuildingFloorRate {
 
         @ManyToOne(fetch = FetchType.LAZY, optional = false)
         @JoinColumn(name = "building_type_id", nullable = false)
-        private StructureType buildingType;
+        private BuildingType buildingType;
 
         /*
          * Selected configuration:

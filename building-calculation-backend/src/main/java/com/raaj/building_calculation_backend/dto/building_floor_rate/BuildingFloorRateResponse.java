@@ -3,8 +3,8 @@ package com.raaj.building_calculation_backend.dto.building_floor_rate;
 
 import java.math.BigDecimal;
 
+import com.raaj.building_calculation_backend.dto.building_type.BuildingTypeResponse;
 import com.raaj.building_calculation_backend.dto.floor.FloorTypeResponse;
-import com.raaj.building_calculation_backend.dto.structure_type.StructureTypeResponse;
 import com.raaj.building_calculation_backend.entity.BuildingFloorRate;
 
 import lombok.AllArgsConstructor;
@@ -19,7 +19,7 @@ import lombok.Setter;
 public class BuildingFloorRateResponse {
 
     private Long id;
-    private StructureTypeResponse buildingType;
+    private BuildingTypeResponse buildingType;
     private FloorTypeResponse floorType;
     private FloorTypeResponse componentFloorType;
     private BigDecimal baseRate;
@@ -28,7 +28,7 @@ public class BuildingFloorRateResponse {
     public static BuildingFloorRateResponse from(BuildingFloorRate entity) {
         return new BuildingFloorRateResponse(
                 entity.getId(),
-                StructureTypeResponse.from(entity.getBuildingType()),
+                BuildingTypeResponse.from(entity.getBuildingType()),
                 FloorTypeResponse.from(entity.getFloorType()),
                 FloorTypeResponse.from(entity.getComponentFloorType()),
                 entity.getBaseRate(),

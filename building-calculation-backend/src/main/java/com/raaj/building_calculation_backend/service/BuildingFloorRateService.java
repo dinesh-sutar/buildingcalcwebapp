@@ -8,10 +8,10 @@ import org.springframework.stereotype.Service;
 import com.raaj.building_calculation_backend.dto.building_floor_rate.BuildingFloorRateRequest;
 import com.raaj.building_calculation_backend.dto.building_floor_rate.BuildingFloorRateResponse;
 import com.raaj.building_calculation_backend.entity.BuildingFloorRate;
-import com.raaj.building_calculation_backend.entity.StructureType;
+import com.raaj.building_calculation_backend.entity.BuildingType;
 import com.raaj.building_calculation_backend.entity.FloorType;
 import com.raaj.building_calculation_backend.repository.BuildingFloorRateRepository;
-import com.raaj.building_calculation_backend.repository.StructureTypeRepository;
+import com.raaj.building_calculation_backend.repository.BuildingTypeRepository;
 import com.raaj.building_calculation_backend.repository.FloorTypeRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class BuildingFloorRateService {
 
         private final BuildingFloorRateRepository repository;
-        private final StructureTypeRepository buildingTypeRepository;
+        private final BuildingTypeRepository buildingTypeRepository;
         private final FloorTypeRepository floorTypeRepository;
 
         public List<BuildingFloorRateResponse> getAll() {
@@ -37,7 +37,7 @@ public class BuildingFloorRateService {
 
         public BuildingFloorRateResponse create(BuildingFloorRateRequest request) {
 
-                StructureType buildingType = buildingTypeRepository
+                BuildingType buildingType = buildingTypeRepository
                                 .findById(request.getBuildingTypeId())
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Building type not found: " + request.getBuildingTypeId()));
@@ -85,7 +85,7 @@ public class BuildingFloorRateService {
 
                 BuildingFloorRate entity = getEntity(id);
 
-                StructureType buildingType = buildingTypeRepository
+                BuildingType buildingType = buildingTypeRepository
                                 .findById(request.getBuildingTypeId())
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Building type not found: " + request.getBuildingTypeId()));
