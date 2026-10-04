@@ -35,6 +35,13 @@ public class BuildingTypeService {
                 .toList();
     }
 
+    public List<BuildingTypeResponse> getAllBuildingTypesByStructureTypeId(Long structureTypeId) {
+        List<BuildingType> buildings = repository.findByStructureTypeId(structureTypeId);
+        return buildings.stream()
+                .map(BuildingTypeResponse::from)
+                .toList();
+    }
+
     public BuildingTypeResponse getById(Long id) {
         return BuildingTypeResponse.from(getEntity(id));
     }

@@ -5,11 +5,13 @@ import Modal from "./Modal";
 function CrudTable({
     title,
     endpoint,
+    fetchEndpoint,
     columns,
     fields,
     initialForm,
     renderCell,
     toFormValues,
+    headerActions,
 }) {
     const [items, setItems] = useState([]);
     const [form, setForm] = useState(initialForm);
@@ -20,12 +22,20 @@ function CrudTable({
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
 
+    const activeFetchUrl =
+        fetchEndpoint !== undefined ? fetchEndpoint : endpoint;
+
     const loadItems = async () => {
+        if (!activeFetchUrl) {
+            setItems([]);
+            return;
+        }
+
         try {
             setLoading(true);
             setError("");
 
-            const data = await api.get(endpoint);
+            const data = await api.get(activeFetchUrl);
 
             setItems(Array.isArray(data) ? data : []);
         } catch (err) {
@@ -38,12 +48,18 @@ function CrudTable({
     useEffect(() => {
         let cancelled = false;
 
+        if (!activeFetchUrl) {
+            setItems([]);
+            setLoading(false);
+            return;
+        }
+
         const fetchItems = async () => {
             try {
                 setLoading(true);
                 setError("");
 
-                const data = await api.get(endpoint);
+                const data = await api.get(activeFetchUrl);
 
                 if (!cancelled) {
                     setItems(Array.isArray(data) ? data : []);
@@ -64,7 +80,7 @@ function CrudTable({
         return () => {
             cancelled = true;
         };
-    }, [endpoint]);
+    }, [activeFetchUrl]);
 
     const openCreate = () => {
         setEditingId(null);
@@ -110,6 +126,9 @@ function CrudTable({
     const handleSubmit = async (event) => {
         event.preventDefault();
 
+        // Save current scroll position before saving
+        const scrollPosition = window.scrollY;
+
         try {
             setSaving(true);
             setError("");
@@ -119,7 +138,10 @@ function CrudTable({
             fields.forEach((field) => {
                 let value = form[field.name];
 
-                if (field.type === "number" || field.valueType === "number") {
+                if (
+                    field.type === "number" ||
+                    field.valueType === "number"
+                ) {
                     value = value === "" ? null : Number(value);
                 }
 
@@ -140,7 +162,14 @@ function CrudTable({
             }
 
             setShowModal(false);
+
+            // Reload the data
             await loadItems();
+
+            // Restore previous scroll position
+            requestAnimationFrame(() => {
+                window.scrollTo(0, scrollPosition);
+            });
         } catch (err) {
             setError(err.message);
         } finally {
@@ -183,12 +212,22 @@ function CrudTable({
                     </p>
                 </div>
 
-                <button
-                    className="primary-button"
-                    onClick={openCreate}
+                <div
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "12px",
+                        flexWrap: "wrap",
+                    }}
                 >
-                    + Add New
-                </button>
+                    {headerActions}
+                    <button
+                        className="primary-button"
+                        onClick={openCreate}
+                    >
+                        + Add New
+                    </button>
+                </div>
             </div>
 
             {error && (

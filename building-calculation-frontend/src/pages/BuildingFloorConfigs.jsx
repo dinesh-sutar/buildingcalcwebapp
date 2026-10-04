@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
+
 import api from "../api/api";
 import Modal from "../components/Modal";
 
 const EMPTY_FORM = {
+    structureTypeId: "",
     buildingTypeId: "",
     floorTypeId: "",
     enabled: true,
@@ -62,6 +64,8 @@ const GROUP_STYLES = `
 
 function BuildingFloorConfigs() {
     const [configs, setConfigs] = useState([]);
+
+    const [structureTypes, setStructureTypes] = useState([]);
     const [buildingTypes, setBuildingTypes] = useState([]);
     const [floorTypes, setFloorTypes] = useState([]);
 
@@ -71,26 +75,72 @@ function BuildingFloorConfigs() {
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [loadingBuildingTypes, setLoadingBuildingTypes] = useState(false);
     const [error, setError] = useState("");
 
-    // collapsed groups, keyed by building type id
+    // Collapsed groups, keyed by structure type + building type
     const [collapsed, setCollapsed] = useState({});
 
     const toggleGroup = (key) =>
-        setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }));
+        setCollapsed((prev) => ({
+            ...prev,
+            [key]: !prev[key],
+        }));
+
+    /*
+     * Load building types based on selected structure type.
+     *
+     * API:
+     * GET /building-types/structure-types/{structureTypeId}
+     */
+    const loadBuildingTypes = async (structureTypeId) => {
+        if (!structureTypeId) {
+            setBuildingTypes([]);
+            return;
+        }
+
+        try {
+            setLoadingBuildingTypes(true);
+            setError("");
+
+            const data = await api.get(
+                `/building-types/structure-types/${structureTypeId}`
+            );
+
+            setBuildingTypes(Array.isArray(data) ? data : []);
+        } catch (err) {
+            setBuildingTypes([]);
+            setError(
+                err.message || "Failed to load building types"
+            );
+        } finally {
+            setLoadingBuildingTypes(false);
+        }
+    };
 
     const loadData = async () => {
         try {
             setLoading(true);
+            setError("");
 
-            const [configData, buildingData, floorData] = await Promise.all([
+            /*
+             * Building types are intentionally NOT loaded here.
+             *
+             * They are loaded only after selecting a structure type
+             * inside the configuration modal.
+             */
+            const [
+                configData,
+                structureData,
+                floorData,
+            ] = await Promise.all([
                 api.get("/building-floor-configs"),
-                api.get("/building-types"),
+                api.get("/structure-types"),
                 api.get("/floor-types"),
             ]);
 
             setConfigs(configData || []);
-            setBuildingTypes(buildingData || []);
+            setStructureTypes(structureData || []);
             setFloorTypes(floorData || []);
         } catch (err) {
             setError(err.message);
@@ -103,73 +153,190 @@ function BuildingFloorConfigs() {
         loadData();
     }, []);
 
-    // Group configs by building type, sorted by building id,
-    // and rows inside each group sorted by floor order.
+    /*
+     * Group by:
+     *
+     * Structure Type
+     *     └── Building Type
+     *             └── Floor Types
+     */
     const groupedConfigs = useMemo(() => {
-        const map = new Map();
+        const structureMap = new Map();
 
         configs.forEach((item) => {
+            const structure = item.structureType;
             const building = item.buildingType;
-            const key = building?.id ?? "unknown";
 
-            if (!map.has(key)) {
-                map.set(key, { key, building, items: [] });
+            const structureId =
+                structure?.id ?? "unknown-structure";
+
+            const buildingId =
+                building?.id ?? "unknown-building";
+
+            if (!structureMap.has(structureId)) {
+                structureMap.set(structureId, {
+                    key: `structure-${structureId}`,
+                    structure,
+                    buildings: new Map(),
+                });
             }
-            map.get(key).items.push(item);
+
+            const structureGroup =
+                structureMap.get(structureId);
+
+            if (!structureGroup.buildings.has(buildingId)) {
+                structureGroup.buildings.set(buildingId, {
+                    key: `structure-${structureId}-building-${buildingId}`,
+                    building,
+                    items: [],
+                });
+            }
+
+            structureGroup.buildings
+                .get(buildingId)
+                .items.push(item);
         });
 
-        return Array.from(map.values())
-            .sort((a, b) => (a.building?.id ?? 0) - (b.building?.id ?? 0))
-            .map((group) => ({
-                ...group,
-                items: [...group.items].sort(
-                    (a, b) =>
-                        (a.floorType?.displayOrder ?? 0) -
-                        (b.floorType?.displayOrder ?? 0)
-                ),
+        return Array.from(structureMap.values())
+            .sort(
+                (a, b) =>
+                    (a.structure?.id ?? 0) -
+                    (b.structure?.id ?? 0)
+            )
+            .map((structureGroup) => ({
+                ...structureGroup,
+                buildings: Array.from(
+                    structureGroup.buildings.values()
+                )
+                    .sort(
+                        (a, b) =>
+                            (a.building?.id ?? 0) -
+                            (b.building?.id ?? 0)
+                    )
+                    .map((buildingGroup) => ({
+                        ...buildingGroup,
+                        items: [...buildingGroup.items].sort(
+                            (a, b) =>
+                                (a.floorType?.displayOrder ?? 0) -
+                                (b.floorType?.displayOrder ?? 0)
+                        ),
+                    })),
             }));
     }, [configs]);
 
-    // Optional buildingTypeId lets a group's "+ Add" prefill the building.
-    const openCreate = (buildingTypeId = "") => {
+    /*
+     * Open modal for creating a new configuration.
+     *
+     * structureTypeId and buildingTypeId can be supplied
+     * when opening from an existing building group.
+     */
+    const openCreate = async (
+        structureTypeId = "",
+        buildingTypeId = ""
+    ) => {
         setEditingId(null);
-        setForm({ ...EMPTY_FORM, buildingTypeId });
+
+        setForm({
+            ...EMPTY_FORM,
+            structureTypeId,
+            buildingTypeId,
+        });
+
+        setError("");
+
+        /*
+         * If the modal was opened from an existing
+         * structure/building group, load the corresponding
+         * building types immediately.
+         */
+        if (structureTypeId) {
+            await loadBuildingTypes(structureTypeId);
+        } else {
+            setBuildingTypes([]);
+        }
+
         setShowModal(true);
     };
 
-    const openEdit = (item) => {
+    /*
+     * Open modal for editing an existing configuration.
+     */
+    const openEdit = async (item) => {
         setEditingId(item.id);
 
+        const structureTypeId =
+            item.structureType?.id || "";
+
+        const buildingTypeId =
+            item.buildingType?.id || "";
+
         setForm({
-            buildingTypeId: item.buildingType?.id || "",
+            structureTypeId,
+            buildingTypeId,
             floorTypeId: item.floorType?.id || "",
             enabled: item.enabled ?? true,
         });
 
+        setError("");
+
+        /*
+         * Load building types belonging to the
+         * existing structure type before opening
+         * the edit modal.
+         */
+        if (structureTypeId) {
+            await loadBuildingTypes(structureTypeId);
+        } else {
+            setBuildingTypes([]);
+        }
+
         setShowModal(true);
     };
 
+    /*
+     * Handle form submission.
+     */
     const handleSubmit = async (event) => {
         event.preventDefault();
+
+        // Save current scroll position before saving
+        const scrollPosition = window.scrollY;
 
         try {
             setSaving(true);
             setError("");
 
             const payload = {
+                structureTypeId: Number(form.structureTypeId),
                 buildingTypeId: Number(form.buildingTypeId),
                 floorTypeId: Number(form.floorTypeId),
                 enabled: Boolean(form.enabled),
             };
 
             if (editingId) {
-                await api.put(`/building-floor-configs/${editingId}`, payload);
+                await api.put(
+                    `/building-floor-configs/${editingId}`,
+                    payload
+                );
             } else {
-                await api.post("/building-floor-configs", payload);
+                await api.post(
+                    "/building-floor-configs",
+                    payload
+                );
             }
 
             setShowModal(false);
+
+            // Reload the data
             await loadData();
+
+            // Restore the previous scroll position
+            requestAnimationFrame(() => {
+                window.scrollTo({
+                    top: scrollPosition,
+                    behavior: "instant",
+                });
+            });
         } catch (err) {
             setError(err.message);
         } finally {
@@ -177,54 +344,90 @@ function BuildingFloorConfigs() {
         }
     };
 
+    /*
+     * Delete configuration.
+     */
     const deleteConfig = async (id) => {
         if (
-            !window.confirm("Are you sure you want to delete this configuration?")
+            !window.confirm(
+                "Are you sure you want to delete this configuration?"
+            )
         ) {
             return;
         }
 
         try {
-            await api.delete(`/building-floor-configs/${id}`);
+            setError("");
+
+            await api.delete(
+                `/building-floor-configs/${id}`
+            );
+
             await loadData();
         } catch (err) {
             setError(err.message);
         }
     };
 
-    const renderGroup = (group) => {
-        const isCollapsed = Boolean(collapsed[group.key]);
-        const count = group.items.length;
+    const renderBuildingGroup = (
+        structure,
+        buildingGroup
+    ) => {
+        const isCollapsed = Boolean(
+            collapsed[buildingGroup.key]
+        );
+
+        const count = buildingGroup.items.length;
 
         return (
-            <div className="table-card group-card" key={group.key}>
+            <div
+                className="table-card group-card"
+                key={buildingGroup.key}
+            >
                 <div
                     className="group-header"
                     role="button"
                     tabIndex={0}
                     aria-expanded={!isCollapsed}
-                    onClick={() => toggleGroup(group.key)}
+                    onClick={() =>
+                        toggleGroup(buildingGroup.key)
+                    }
                     onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
+                        if (
+                            event.key === "Enter" ||
+                            event.key === " "
+                        ) {
                             event.preventDefault();
-                            toggleGroup(group.key);
+                            toggleGroup(buildingGroup.key);
                         }
                     }}
                 >
                     <div className="group-title">
-                        <span className="chevron" aria-hidden="true">
+                        <span
+                            className="chevron"
+                            aria-hidden="true"
+                        >
                             {isCollapsed ? "▶" : "▼"}
                         </span>
 
                         <div>
-                            <h2>{group.building?.name ?? "Unknown building type"}</h2>
-                            {group.building?.code && (
-                                <small>{group.building.code}</small>
+                            <h2>
+                                {buildingGroup.building?.name ??
+                                    "Unknown building type"}
+                            </h2>
+
+                            {buildingGroup.building?.code && (
+                                <small>
+                                    {buildingGroup.building.code}
+                                </small>
                             )}
                         </div>
 
                         <span className="count-badge">
-                            {count} {count === 1 ? "floor type" : "floor types"}
+                            {count}{" "}
+                            {count === 1
+                                ? "floor type"
+                                : "floor types"}
                         </span>
                     </div>
 
@@ -233,7 +436,11 @@ function BuildingFloorConfigs() {
                         className="secondary-button"
                         onClick={(event) => {
                             event.stopPropagation();
-                            openCreate(group.building?.id ?? "");
+
+                            openCreate(
+                                structure?.id ?? "",
+                                buildingGroup.building?.id ?? ""
+                            );
                         }}
                     >
                         + Add configuration
@@ -253,14 +460,18 @@ function BuildingFloorConfigs() {
                             </thead>
 
                             <tbody>
-                                {group.items.map((item) => (
+                                {buildingGroup.items.map((item) => (
                                     <tr key={item.id}>
                                         <td>{item.id}</td>
 
                                         <td>
-                                            <strong>{item.floorType?.code}</strong>
+                                            <strong>
+                                                {item.floorType?.code}
+                                            </strong>
                                             <br />
-                                            <small>{item.floorType?.name}</small>
+                                            <small>
+                                                {item.floorType?.name}
+                                            </small>
                                         </td>
 
                                         <td>
@@ -271,7 +482,9 @@ function BuildingFloorConfigs() {
                                                         : "status inactive"
                                                 }
                                             >
-                                                {item.enabled ? "Enabled" : "Disabled"}
+                                                {item.enabled
+                                                    ? "Enabled"
+                                                    : "Disabled"}
                                             </span>
                                         </td>
 
@@ -279,14 +492,20 @@ function BuildingFloorConfigs() {
                                             <div className="actions">
                                                 <button
                                                     className="edit-button"
-                                                    onClick={() => openEdit(item)}
+                                                    onClick={() =>
+                                                        openEdit(item)
+                                                    }
                                                 >
                                                     Edit
                                                 </button>
 
                                                 <button
                                                     className="delete-button"
-                                                    onClick={() => deleteConfig(item.id)}
+                                                    onClick={() =>
+                                                        deleteConfig(
+                                                            item.id
+                                                        )
+                                                    }
                                                 >
                                                     Delete
                                                 </button>
@@ -309,8 +528,10 @@ function BuildingFloorConfigs() {
             <div className="page-header">
                 <div>
                     <h1>Building Floor Configuration</h1>
+
                     <p>
-                        Configure which floor types are available for each
+                        Configure which floor types are
+                        available for each structure and
                         building type.
                     </p>
                 </div>
@@ -323,84 +544,245 @@ function BuildingFloorConfigs() {
                 </button>
             </div>
 
-            {error && <div className="error-message">{error}</div>}
+            {error && (
+                <div className="error-message">
+                    {error}
+                </div>
+            )}
 
             {loading ? (
                 <div className="table-card">
-                    <div className="loading">Loading...</div>
+                    <div className="loading">
+                        Loading...
+                    </div>
                 </div>
             ) : groupedConfigs.length === 0 ? (
                 <div className="table-card">
-                    <div className="empty">No configurations found.</div>
+                    <div className="empty">
+                        No configurations found.
+                    </div>
                 </div>
             ) : (
-                groupedConfigs.map(renderGroup)
+                groupedConfigs.map((structureGroup) => (
+                    <div key={structureGroup.key}>
+                        {/* Structure Type Header */}
+                        {/* Structure Type Header */}
+                        <div
+                            className="table-card"
+                            style={{
+                                marginBottom: "10px",
+                                padding: "16px",
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                gap: "16px",
+                            }}
+                        >
+                            <div className="group-title">
+                                <div>
+                                    <h2>
+                                        {structureGroup.structure?.name ??
+                                            "Unknown structure type"}
+                                    </h2>
+
+                                    {structureGroup.structure?.code && (
+                                        <small>
+                                            {structureGroup.structure.code}
+                                        </small>
+                                    )}
+                                </div>
+                            </div>
+
+                            <button
+                                type="button"
+                                className="secondary-button"
+                                onClick={() =>
+                                    openCreate(
+                                        structureGroup.structure?.id ?? "",
+                                        ""
+                                    )
+                                }
+                            >
+                                + Add configuration
+                            </button>
+                        </div>
+
+                        {structureGroup.buildings.map(
+                            (buildingGroup) =>
+                                renderBuildingGroup(
+                                    structureGroup.structure,
+                                    buildingGroup
+                                )
+                        )}
+                    </div>
+                ))
             )}
 
             {showModal && (
                 <Modal
-                    title={editingId ? "Edit Configuration" : "Add Configuration"}
-                    onClose={() => setShowModal(false)}
+                    title={
+                        editingId
+                            ? "Edit Configuration"
+                            : "Add Configuration"
+                    }
+                    onClose={() =>
+                        setShowModal(false)
+                    }
                 >
-                    <form className="form" onSubmit={handleSubmit}>
+                    <form
+                        className="form"
+                        onSubmit={handleSubmit}
+                    >
+                        {/* Structure Type */}
                         <div className="form-group">
-                            <label>Building Type</label>
+                            <label>
+                                Structure Type
+                            </label>
 
                             <select
-                                value={form.buildingTypeId}
-                                onChange={(event) =>
-                                    setForm({
-                                        ...form,
-                                        buildingTypeId: event.target.value,
-                                    })
+                                value={
+                                    form.structureTypeId
                                 }
+                                onChange={async (event) => {
+                                    const structureTypeId =
+                                        event.target.value;
+
+                                    /*
+                                     * Clear the current building
+                                     * type because it belongs to
+                                     * the previously selected
+                                     * structure type.
+                                     */
+                                    setForm((previous) => ({
+                                        ...previous,
+                                        structureTypeId,
+                                        buildingTypeId: "",
+                                    }));
+
+                                    /*
+                                     * Load building types for
+                                     * selected structure type.
+                                     */
+                                    await loadBuildingTypes(
+                                        structureTypeId
+                                    );
+                                }}
                                 required
                             >
-                                <option value="">Select Building Type</option>
+                                <option value="">
+                                    Select Structure Type
+                                </option>
 
-                                {buildingTypes.map((building) => (
-                                    <option key={building.id} value={building.id}>
-                                        {building.code} - {building.name}
-                                    </option>
-                                ))}
+                                {structureTypes.map(
+                                    (structure) => (
+                                        <option
+                                            key={structure.id}
+                                            value={structure.id}
+                                        >
+                                            {structure.code} -{" "}
+                                            {structure.name}
+                                        </option>
+                                    )
+                                )}
                             </select>
                         </div>
 
+                        {/* Building Type */}
                         <div className="form-group">
-                            <label>Floor Type</label>
+                            <label>
+                                Building Type
+                            </label>
 
                             <select
-                                value={form.floorTypeId}
+                                value={
+                                    form.buildingTypeId
+                                }
                                 onChange={(event) =>
-                                    setForm({
-                                        ...form,
-                                        floorTypeId: event.target.value,
-                                    })
+                                    setForm((previous) => ({
+                                        ...previous,
+                                        buildingTypeId:
+                                            event.target.value,
+                                    }))
+                                }
+                                required
+                                disabled={
+                                    !form.structureTypeId ||
+                                    loadingBuildingTypes
+                                }
+                            >
+                                <option value="">
+                                    {loadingBuildingTypes
+                                        ? "Loading Building Types..."
+                                        : !form.structureTypeId
+                                            ? "Select Structure Type First"
+                                            : "Select Building Type"}
+                                </option>
+
+                                {buildingTypes.map(
+                                    (building) => (
+                                        <option
+                                            key={building.id}
+                                            value={building.id}
+                                        >
+                                            {building.code} -{" "}
+                                            {building.name}
+                                        </option>
+                                    )
+                                )}
+                            </select>
+                        </div>
+
+                        {/* Floor Type */}
+                        <div className="form-group">
+                            <label>
+                                Floor Type
+                            </label>
+
+                            <select
+                                value={
+                                    form.floorTypeId
+                                }
+                                onChange={(event) =>
+                                    setForm((previous) => ({
+                                        ...previous,
+                                        floorTypeId:
+                                            event.target.value,
+                                    }))
                                 }
                                 required
                             >
-                                <option value="">Select Floor Type</option>
+                                <option value="">
+                                    Select Floor Type
+                                </option>
 
                                 {floorTypes.map((floor) => (
-                                    <option key={floor.id} value={floor.id}>
-                                        {floor.code} - {floor.name}
+                                    <option
+                                        key={floor.id}
+                                        value={floor.id}
+                                    >
+                                        {floor.code} -{" "}
+                                        {floor.name}
                                     </option>
                                 ))}
                             </select>
                         </div>
 
+                        {/* Enabled */}
                         <div className="form-group">
                             <label className="checkbox-label">
                                 <input
                                     type="checkbox"
                                     checked={form.enabled}
                                     onChange={(event) =>
-                                        setForm({
-                                            ...form,
-                                            enabled: event.target.checked,
-                                        })
+                                        setForm((previous) => ({
+                                            ...previous,
+                                            enabled:
+                                                event.target
+                                                    .checked,
+                                        }))
                                     }
                                 />
+
                                 Enabled
                             </label>
                         </div>
@@ -409,7 +791,9 @@ function BuildingFloorConfigs() {
                             <button
                                 type="button"
                                 className="secondary-button"
-                                onClick={() => setShowModal(false)}
+                                onClick={() =>
+                                    setShowModal(false)
+                                }
                             >
                                 Cancel
                             </button>

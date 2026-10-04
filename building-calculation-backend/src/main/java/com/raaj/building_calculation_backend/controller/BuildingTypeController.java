@@ -32,6 +32,12 @@ public class BuildingTypeController {
         return ResponseEntity.ok(service.getById(id));
     }
 
+    @GetMapping("/structure-types/{structureTypeId}")
+    public ResponseEntity<List<BuildingTypeResponse>> getAllByStructureTypeId(
+            @PathVariable Long structureTypeId) {
+        return ResponseEntity.ok(service.getAllBuildingTypesByStructureTypeId(structureTypeId));
+    }
+
     @PostMapping
     public ResponseEntity<BuildingTypeResponse> create(
             @RequestBody BuildingTypeRequest request) {
