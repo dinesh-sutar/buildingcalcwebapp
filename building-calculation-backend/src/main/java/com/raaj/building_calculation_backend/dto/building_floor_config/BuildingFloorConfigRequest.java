@@ -11,6 +11,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class BuildingFloorConfigRequest {
 
+    private Long structureTypeId;
+
     private Long buildingTypeId;
 
     private Long floorTypeId;

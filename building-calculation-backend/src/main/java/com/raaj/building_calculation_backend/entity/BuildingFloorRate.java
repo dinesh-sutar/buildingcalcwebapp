@@ -22,8 +22,8 @@ import lombok.Setter;
                 @UniqueConstraint(name = "uk_building_floor_component", columnNames = {
                                 "building_type_id",
                                 "floor_type_id",
-                                "component_floor_type_id"
-                })
+                                "component_floor_type_id",
+                                "structure_type_id" })
 })
 @Getter
 @Setter
@@ -34,6 +34,10 @@ public class BuildingFloorRate {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Long id;
+
+        @ManyToOne(fetch = FetchType.LAZY, optional = false)
+        @JoinColumn(name = "structure_type_id", nullable = false)
+        private StructureType structureType;
 
         @ManyToOne(fetch = FetchType.LAZY, optional = false)
         @JoinColumn(name = "building_type_id", nullable = false)

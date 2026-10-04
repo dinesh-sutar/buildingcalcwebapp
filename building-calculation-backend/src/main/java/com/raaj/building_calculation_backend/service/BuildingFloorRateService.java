@@ -1,4 +1,3 @@
-// service/BuildingFloorRateService.java
 package com.raaj.building_calculation_backend.service;
 
 import java.util.List;
@@ -10,9 +9,11 @@ import com.raaj.building_calculation_backend.dto.building_floor_rate.BuildingFlo
 import com.raaj.building_calculation_backend.entity.BuildingFloorRate;
 import com.raaj.building_calculation_backend.entity.BuildingType;
 import com.raaj.building_calculation_backend.entity.FloorType;
+import com.raaj.building_calculation_backend.entity.StructureType;
 import com.raaj.building_calculation_backend.repository.BuildingFloorRateRepository;
 import com.raaj.building_calculation_backend.repository.BuildingTypeRepository;
 import com.raaj.building_calculation_backend.repository.FloorTypeRepository;
+import com.raaj.building_calculation_backend.repository.StructureTypeRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,10 +22,15 @@ import lombok.RequiredArgsConstructor;
 public class BuildingFloorRateService {
 
         private final BuildingFloorRateRepository repository;
+
+        private final StructureTypeRepository structureTypeRepository;
+
         private final BuildingTypeRepository buildingTypeRepository;
+
         private final FloorTypeRepository floorTypeRepository;
 
         public List<BuildingFloorRateResponse> getAll() {
+
                 return repository.findAll()
                                 .stream()
                                 .map(BuildingFloorRateResponse::from)
@@ -32,20 +38,30 @@ public class BuildingFloorRateService {
         }
 
         public BuildingFloorRateResponse getById(Long id) {
+
                 return BuildingFloorRateResponse.from(getEntity(id));
         }
 
-        public BuildingFloorRateResponse create(BuildingFloorRateRequest request) {
+        public BuildingFloorRateResponse create(
+                        BuildingFloorRateRequest request) {
+
+                StructureType structureType = structureTypeRepository
+                                .findById(request.getStructureTypeId())
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Structure type not found: "
+                                                                + request.getStructureTypeId()));
 
                 BuildingType buildingType = buildingTypeRepository
                                 .findById(request.getBuildingTypeId())
                                 .orElseThrow(() -> new RuntimeException(
-                                                "Building type not found: " + request.getBuildingTypeId()));
+                                                "Building type not found: "
+                                                                + request.getBuildingTypeId()));
 
                 FloorType floorType = floorTypeRepository
                                 .findById(request.getFloorTypeId())
                                 .orElseThrow(() -> new RuntimeException(
-                                                "Floor type not found: " + request.getFloorTypeId()));
+                                                "Floor type not found: "
+                                                                + request.getFloorTypeId()));
 
                 FloorType componentFloorType = floorTypeRepository
                                 .findById(request.getComponentFloorTypeId())
@@ -54,14 +70,19 @@ public class BuildingFloorRateService {
                                                                 + request.getComponentFloorTypeId()));
 
                 boolean exists = repository
-                                .existsByBuildingTypeIdAndFloorTypeIdAndComponentFloorTypeId(
+                                .existsByStructureTypeIdAndBuildingTypeIdAndFloorTypeIdAndComponentFloorTypeId(
+                                                request.getStructureTypeId(),
                                                 request.getBuildingTypeId(),
                                                 request.getFloorTypeId(),
                                                 request.getComponentFloorTypeId());
 
                 if (exists) {
+
                         throw new RuntimeException(
-                                        "Building floor rate already exists for building type "
+                                        "Building floor rate already exists for "
+                                                        + "structure type "
+                                                        + request.getStructureTypeId()
+                                                        + ", building type "
                                                         + request.getBuildingTypeId()
                                                         + ", floor type "
                                                         + request.getFloorTypeId()
@@ -71,29 +92,44 @@ public class BuildingFloorRateService {
 
                 BuildingFloorRate entity = new BuildingFloorRate();
 
+                entity.setStructureType(structureType);
                 entity.setBuildingType(buildingType);
                 entity.setFloorType(floorType);
                 entity.setComponentFloorType(componentFloorType);
                 entity.setBaseRate(request.getBaseRate());
-                entity.setActive(
-                                request.getActive() != null ? request.getActive() : true);
 
-                return BuildingFloorRateResponse.from(repository.save(entity));
+                entity.setActive(
+                                request.getActive() != null
+                                                ? request.getActive()
+                                                : true);
+
+                return BuildingFloorRateResponse.from(
+                                repository.save(entity));
         }
 
-        public BuildingFloorRateResponse update(Long id, BuildingFloorRateRequest request) {
+        public BuildingFloorRateResponse update(
+                        Long id,
+                        BuildingFloorRateRequest request) {
 
                 BuildingFloorRate entity = getEntity(id);
+
+                StructureType structureType = structureTypeRepository
+                                .findById(request.getStructureTypeId())
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Structure type not found: "
+                                                                + request.getStructureTypeId()));
 
                 BuildingType buildingType = buildingTypeRepository
                                 .findById(request.getBuildingTypeId())
                                 .orElseThrow(() -> new RuntimeException(
-                                                "Building type not found: " + request.getBuildingTypeId()));
+                                                "Building type not found: "
+                                                                + request.getBuildingTypeId()));
 
                 FloorType floorType = floorTypeRepository
                                 .findById(request.getFloorTypeId())
                                 .orElseThrow(() -> new RuntimeException(
-                                                "Floor type not found: " + request.getFloorTypeId()));
+                                                "Floor type not found: "
+                                                                + request.getFloorTypeId()));
 
                 FloorType componentFloorType = floorTypeRepository
                                 .findById(request.getComponentFloorTypeId())
@@ -102,21 +138,26 @@ public class BuildingFloorRateService {
                                                                 + request.getComponentFloorTypeId()));
 
                 boolean exists = repository
-                                .existsByBuildingTypeIdAndFloorTypeIdAndComponentFloorTypeId(
+                                .existsByStructureTypeIdAndBuildingTypeIdAndFloorTypeIdAndComponentFloorTypeId(
+                                                request.getStructureTypeId(),
                                                 request.getBuildingTypeId(),
                                                 request.getFloorTypeId(),
                                                 request.getComponentFloorTypeId());
 
-                boolean isSameRecord = entity.getBuildingType().getId().equals(request.getBuildingTypeId())
+                boolean isSameRecord = entity.getStructureType().getId().equals(request.getStructureTypeId())
+                                && entity.getBuildingType().getId().equals(request.getBuildingTypeId())
                                 && entity.getFloorType().getId().equals(request.getFloorTypeId())
-                                && entity.getComponentFloorType().getId().equals(request.getComponentFloorTypeId());
+                                && entity.getComponentFloorType().getId()
+                                                .equals(request.getComponentFloorTypeId());
 
                 if (exists && !isSameRecord) {
+
                         throw new RuntimeException(
                                         "Building floor rate already exists for the specified "
-                                                        + "building/floor/component combination");
+                                                        + "structure/building/floor/component combination");
                 }
 
+                entity.setStructureType(structureType);
                 entity.setBuildingType(buildingType);
                 entity.setFloorType(floorType);
                 entity.setComponentFloorType(componentFloorType);
@@ -126,14 +167,17 @@ public class BuildingFloorRateService {
                         entity.setActive(request.getActive());
                 }
 
-                return BuildingFloorRateResponse.from(repository.save(entity));
+                return BuildingFloorRateResponse.from(
+                                repository.save(entity));
         }
 
         public void delete(Long id) {
+
                 repository.delete(getEntity(id));
         }
 
         private BuildingFloorRate getEntity(Long id) {
+
                 return repository.findById(id)
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Building floor rate not found: " + id));

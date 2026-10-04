@@ -13,6 +13,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class BuildingFloorRateRequest {
 
+    private Long structureTypeId;
+
     private Long buildingTypeId;
 
     private Long floorTypeId;

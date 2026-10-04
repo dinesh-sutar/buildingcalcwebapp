@@ -7,14 +7,20 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.raaj.building_calculation_backend.entity.BuildingFloorRate;
 
 public interface BuildingFloorRateRepository
-        extends JpaRepository<BuildingFloorRate, Long> {
+                extends JpaRepository<BuildingFloorRate, Long> {
 
-    boolean existsByBuildingTypeIdAndFloorTypeIdAndComponentFloorTypeId(
-            Long buildingTypeId,
-            Long floorTypeId,
-            Long componentFloorTypeId);
+        boolean existsByBuildingTypeIdAndFloorTypeIdAndComponentFloorTypeId(
+                        Long buildingTypeId,
+                        Long floorTypeId,
+                        Long componentFloorTypeId);
 
-            List<BuildingFloorRate> findByBuildingTypeIdAndFloorTypeIdAndActiveTrue(
-            Long buildingTypeId,
-            Long floorTypeId);
+        List<BuildingFloorRate> findByBuildingTypeIdAndFloorTypeIdAndActiveTrue(
+                        Long buildingTypeId,
+                        Long floorTypeId);
+
+        boolean existsByStructureTypeIdAndBuildingTypeIdAndFloorTypeIdAndComponentFloorTypeId(
+                        Long structureTypeId,
+                        Long buildingTypeId,
+                        Long floorTypeId,
+                        Long componentFloorTypeId);
 }

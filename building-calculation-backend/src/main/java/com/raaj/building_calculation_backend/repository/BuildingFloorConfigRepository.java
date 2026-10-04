@@ -12,4 +12,9 @@ public interface BuildingFloorConfigRepository extends JpaRepository<BuildingFlo
 
     Optional<BuildingFloorConfig> findByBuildingTypeIdAndFloorTypeId(Long buildingTypeId, Long floorTypeId);
 
+    boolean existsByStructureTypeIdAndBuildingTypeIdAndFloorTypeId(
+            Long structureTypeId,
+            Long buildingTypeId,
+            Long floorTypeId);
+
 }
