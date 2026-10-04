@@ -4,6 +4,7 @@ function Navbar({ activePage, setActivePage }) {
             id: "visitor-analytics",
             label: "Visitor Analytics",
         },
+        { id: "structure-types", label: "Structure Types" },
         {
             id: "building-types",
             label: "Building Types",

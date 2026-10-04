@@ -9,6 +9,7 @@ function CrudTable({
     fields,
     initialForm,
     renderCell,
+    toFormValues,
 }) {
     const [items, setItems] = useState([]);
     const [form, setForm] = useState(initialForm);
@@ -75,11 +76,12 @@ function CrudTable({
     const openEdit = (item) => {
         setEditingId(item.id);
 
+        const source = toFormValues ? toFormValues(item) : item;
         const newForm = {};
 
         fields.forEach((field) => {
             newForm[field.name] =
-                item[field.name] ?? field.defaultValue ?? "";
+                source[field.name] ?? field.defaultValue ?? "";
         });
 
         setForm(newForm);
@@ -117,11 +119,8 @@ function CrudTable({
             fields.forEach((field) => {
                 let value = form[field.name];
 
-                if (field.type === "number") {
-                    value =
-                        value === ""
-                            ? null
-                            : Number(value);
+                if (field.type === "number" || field.valueType === "number") {
+                    value = value === "" ? null : Number(value);
                 }
 
                 if (field.type === "checkbox") {

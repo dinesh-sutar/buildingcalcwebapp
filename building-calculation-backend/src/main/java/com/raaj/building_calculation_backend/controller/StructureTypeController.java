@@ -13,7 +13,7 @@ import com.raaj.building_calculation_backend.service.StructureTypeService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/building-types")
+@RequestMapping("/api/structure-types")
 @RequiredArgsConstructor
 public class StructureTypeController {
 

@@ -10,6 +10,7 @@ import BuildingFloorConfigs from "./pages/BuildingFloorConfigs";
 import BuildingFloorRates from "./pages/BuildingFloorRates";
 import BoundaryTypes from "./pages/BoundaryTypes";
 import VisitorAnalytics from "./pages/VisitorAnalytics";
+import StructureTypes from "./pages/StructureTypes";
 
 function App() {
   const [activePage, setActivePage] =
@@ -20,6 +21,9 @@ function App() {
 
       case "visitor-analytics":
         return <VisitorAnalytics />;
+
+      case "structure-types":
+        return <StructureTypes />;
 
       case "building-types":
         return <BuildingTypes />;

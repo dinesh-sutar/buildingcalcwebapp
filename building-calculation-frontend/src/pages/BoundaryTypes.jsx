@@ -1,49 +1,43 @@
+import { useEffect, useState } from "react";
 import CrudTable from "../components/CrudTable";
+import api from "../api/api";
 
-function BoundaryTypes() {
+function BuildingTypes() {
+    const [structureTypes, setStructureTypes] = useState([]);
+
+    useEffect(() => {
+        api.get("/structure-types")
+            .then((data) => setStructureTypes(data || []))
+            .catch(() => setStructureTypes([]));
+    }, []);
+
+    const structureOptions = structureTypes.map((s) => ({
+        value: s.id,
+        label: s.name,
+    }));
+
     return (
         <CrudTable
-            title="Boundary Types"
-            endpoint="/boundary-types"
+            title="Building Types"
+            endpoint="/building-types"
             columns={[
-                {
-                    key: "id",
-                    label: "ID",
-                },
-                {
-                    key: "code",
-                    label: "Code",
-                },
-                {
-                    key: "name",
-                    label: "Name",
-                },
-                {
-                    key: "rate",
-                    label: "Rate",
-                },
-                {
-                    key: "active",
-                    label: "Active",
-                },
+                { key: "id", label: "ID" },
+                { key: "structureType", label: "Structure" },
+                { key: "code", label: "Code" },
+                { key: "name", label: "Name" },
+                { key: "active", label: "Active" },
             ]}
             fields={[
                 {
-                    name: "code",
-                    label: "Code",
+                    name: "structureTypeId",
+                    label: "Structure Type",
+                    type: "select",
                     required: true,
+                    valueType: "number",
+                    options: structureOptions,
                 },
-                {
-                    name: "name",
-                    label: "Name",
-                    required: true,
-                },
-                {
-                    name: "rate",
-                    label: "Rate (₹)",
-                    type: "number",
-                    required: true,
-                },
+                { name: "code", label: "Code", required: true },
+                { name: "name", label: "Name", required: true },
                 {
                     name: "active",
                     label: "Active",
@@ -52,36 +46,30 @@ function BoundaryTypes() {
                 },
             ]}
             initialForm={{
+                structureTypeId: "",
                 code: "",
                 name: "",
-                rate: "",
                 active: true,
             }}
+            toFormValues={(item) => ({
+                ...item,
+                structureTypeId: item.structureType?.id ?? "",
+            })}
             renderCell={(item, key) => {
+                if (key === "structureType") {
+                    return item.structureType?.name ?? "-";
+                }
                 if (key === "active") {
                     return (
-                        <span
-                            className={
-                                item.active
-                                    ? "status active"
-                                    : "status inactive"
-                            }
-                        >
-                            {item.active
-                                ? "Active"
-                                : "Inactive"}
+                        <span className={item.active ? "status active" : "status inactive"}>
+                            {item.active ? "Active" : "Inactive"}
                         </span>
                     );
                 }
-
-                if (key === "rate") {
-                    return `₹${item.rate}`;
-                }
-
                 return item[key];
             }}
         />
     );
 }
 
-export default BoundaryTypes;
+export default BuildingTypes;
