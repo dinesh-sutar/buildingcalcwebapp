@@ -1,0 +1,55 @@
+package com.raaj.building_calculation_backend.controller;
+
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import com.raaj.building_calculation_backend.dto.building_type.BuildingTypeRequest;
+import com.raaj.building_calculation_backend.dto.building_type.BuildingTypeResponse;
+import com.raaj.building_calculation_backend.service.BuildingTypeService;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/api/building-types")
+@RequiredArgsConstructor
+public class BuildingTypeController {
+
+    private final BuildingTypeService service;
+
+    // GET /api/building-types -> all buildings
+    // GET /api/building-types?structureTypeId=1 -> buildings of one structure
+    @GetMapping
+    public ResponseEntity<List<BuildingTypeResponse>> getAll(
+            @RequestParam(required = false) Long structureTypeId) {
+        return ResponseEntity.ok(service.getAll(structureTypeId));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<BuildingTypeResponse> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getById(id));
+    }
+
+    @PostMapping
+    public ResponseEntity<BuildingTypeResponse> create(
+            @RequestBody BuildingTypeRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(service.create(request));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<BuildingTypeResponse> update(
+            @PathVariable Long id,
+            @RequestBody BuildingTypeRequest request) {
+        return ResponseEntity.ok(service.update(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+}
